@@ -32,6 +32,7 @@ def _add_render_opts(p: argparse.ArgumentParser) -> None:
     p.add_argument("--words", type=int, help="生词条数（默认 8）")
     p.add_argument("--common", type=int, help="视为'已认识'的高频词个数（默认 6000）")
     p.add_argument("--max-words", type=int, help="打印时正文最多保留多少词（默认 900，0=不限）")
+    p.add_argument("--keep-promos", action="store_true", help="不过滤推广/CTA 段落")
     p.add_argument("--no-vocab", action="store_true", help="不印生词表")
     p.add_argument("--no-zh", action="store_true", help="不印中文释义（打印机不支持中文时用）")
 
@@ -53,6 +54,8 @@ def _apply_overrides(args: argparse.Namespace, cfg: AppConfig) -> None:
     max_words = getattr(args, "max_words", None)
     if max_words is not None:
         render_cfg.max_words = max_words
+    if getattr(args, "keep_promos", False):
+        render_cfg.filter_promos = False
     if getattr(args, "no_vocab", False):
         render_cfg.vocab = False
     if getattr(args, "no_zh", False):

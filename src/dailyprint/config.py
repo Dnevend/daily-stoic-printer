@@ -34,6 +34,8 @@ class RenderConfig:
     vocab: bool = True
     count: int = 1  # 一次取几篇（默认最新一篇）
     max_words: int = 900  # 打印时正文最多保留多少词（0 = 不限制）
+    filter_promos: bool = True  # 过滤正文里的推广/CTA 段落
+    promo_phrases: tuple[str, ...] = ()  # 追加的促销短语
 
 
 @dataclass
@@ -134,12 +136,19 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         if "source" in d:
             cfg.source = d["source"]
         kw = {k: v for k, v in d.items() if k in RenderConfig.__dataclass_fields__}
-        cfg.render = RenderConfig(**{**cfg.render.__dict__, **kw})
+        cfg.render = _render_config(cfg.render, kw)
     if "render" in data:
-        cfg.render = RenderConfig(**{**cfg.render.__dict__, **data["render"]})
+        cfg.render = _render_config(cfg.render, data["render"])
     if "printer" in data:
         cfg.printer = PrinterConfig(**{**cfg.printer.__dict__, **data["printer"]})
     if "paths" in data and data["paths"].get("home"):
         cfg.paths = Paths(Path(data["paths"]["home"]).expanduser())
     if "sources" in data:
         cfg.sources = _merge(cfg.sources, data["sources"])
+
+
+def _render_config(current: RenderConfig, over: dict) -> RenderConfig:
+    over = dict(over)
+    if isinstance(over.get("promo_phrases"), list):
+        over["promo_phrases"] = tuple(over["promo_phrases"])
+    return RenderConfig(**{**current.__dict__, **over})

@@ -1,11 +1,16 @@
-"""流水线：来源 -> 文章 -> 生词/释义 -> 一期内容。"""
+"""流水线：来源 -> 文章 -> 过滤推广 -> 生词/释义 -> 一期内容。"""
 
 from __future__ import annotations
 
+import logging
+
 from .config import AppConfig, Paths
-from .enrich import load_dictionary, select_vocab
+from .enrich import load_dictionary, select_vocab, strip_promo_paragraphs
 from .models import Issue
 from .sources import build_source
+from .textutil import md_to_plain
+
+log = logging.getLogger("dailyprint")
 
 
 def load_wordlist(paths: Paths) -> list[str]:
@@ -22,6 +27,17 @@ def build_issue(cfg: AppConfig, source: str | None = None) -> Issue:
     src = build_source(name, spec)
 
     article = src.latest(1)[0]
+
+    if cfg.render.filter_promos:
+        filtered, dropped = strip_promo_paragraphs(
+            article.raw, extra_phrases=cfg.render.promo_phrases
+        )
+        if dropped:
+            log.info("过滤推广段落 %d 个（--keep-promos 可关闭）：", len(dropped))
+            for reason, text in dropped:
+                log.info("  - [%s] %s", reason, text)
+        article.text = md_to_plain(filtered)
+
     issue = Issue(article=article)
 
     if cfg.render.vocab:
