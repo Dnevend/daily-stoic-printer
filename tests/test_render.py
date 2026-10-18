@@ -26,7 +26,7 @@ def make_issue() -> Issue:
 
 def test_render_contains_header_and_vocab():
     text = render(make_issue(), width=48, stamp="2026-10-18 09:00")
-    assert "DAILY PRINT" in text
+    assert "DAILY ENGLISH" in text
     assert "TODAY'S WORDS" in text
     assert "sphere" in text
     assert "球" in text

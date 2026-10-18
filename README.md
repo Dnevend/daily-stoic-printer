@@ -5,7 +5,7 @@
 
 ```
 ================================================
-                  DAILY PRINT
+                 DAILY ENGLISH
                     2026-10-17
 ================================================
 
@@ -75,7 +75,9 @@ uv pip install -e ".[dev]"        # 或 make install
 .venv/bin/dailyprint sources
 
 # 排版预览（不打印）
-.venv/bin/dailyprint preview -o preview.txt
+.venv/bin/dailyprint preview -o preview.txt     # 纯文本（48 列，和纸上一模一样）
+.venv/bin/dailyprint preview -o preview.png     # 热敏纸模拟图（带图，1bit 抖动）
+.venv/bin/dailyprint preview -o preview.html    # 网页预览（等宽 + 图片原图）
 
 # 直接打印（网络打印机）
 .venv/bin/dailyprint --config config.toml print --ip 192.168.1.50
@@ -94,7 +96,7 @@ uv pip install -e ".[dev]"        # 或 make install
 | `sources` | 列出已配置的来源与可用类型 |
 | `build-data [--force]` | 下载并构建词频表 / 词典 |
 | `fetch [--count N] [--images]` | 抓文章存 Markdown |
-| `preview [-o FILE]` | 排版预览 |
+| `preview [-o FILE]` | 排版预览；后缀决定格式：`.txt` 纯文本 / `.png` 热敏模拟（带图）/ `.html` 网页（带图） |
 | `print [--ip IP \| --queue NAME] [--dry-run]` | 抓取 + 排版 + 发送 |
 | `test-print` | 发送测试页 |
 
@@ -224,6 +226,22 @@ tests/                pytest 测试（含 HTML/feed fixture，不联网）
 
 想扩展的地方基本都是「加一个文件 + 注册一行」：来源在 `sources/`，打印机在 `printers/`，
 排版规则在 `render/receipt.py`，生词策略在 `enrich/vocab.py`。
+
+## 预览
+
+不用打印机也能看效果，按 `-o` 的后缀选格式：
+
+| 后缀 | 内容 | 用途 |
+|---|---|---|
+| `.txt` | 纯文本，48 列 | 和纸上的字符完全一致，可 diff |
+| `.png` | **热敏纸模拟图**（576px 宽，图片按 1bit 抖动） | 最接近真实打印效果（含图片） |
+| `.html` | 网页（等宽字体 + 图片原图） | 快速浏览，可选中文字 |
+
+```bash
+.venv/bin/dailyprint preview -o preview.png && open preview.png
+```
+
+PNG 需要 Pillow（`uv pip install -e ".[images]"`）；HTML 无额外依赖。
 
 ## 开发
 

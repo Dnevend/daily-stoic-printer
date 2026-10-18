@@ -19,7 +19,7 @@ def render(
     lines: list[str] = []
 
     lines.append("=" * width)
-    lines.append(center_disp("DAILY PRINT", width))
+    lines.append(center_disp("DAILY ENGLISH", width))
     lines.append(center_disp(article.date, width))
     lines.append("=" * width)
     lines.append("")

@@ -25,14 +25,18 @@ def available() -> bool:
     return True
 
 
-def image_to_raster(
+def prepare_bitmap(
     source: bytes | str | Path,
     *,
     max_width: int = MAX_WIDTH,
     max_height: int = 400,
     dither: bool = True,
-) -> bytes:
-    """返回 ESC/POS 位图命令（``GS v 0`` 头 + 1bit 数据，1=黑）。"""
+):
+    """把图片处理成热敏打印机要的 1bit 图（1=白、0=黑）。位图编码与预览共用。
+
+    等比缩放到 (max_width, max_height) 以内，并**居中补白到纸宽**，
+    这样窄图/竖图不会贴着左边。
+    """
     try:
         from PIL import Image
     except ImportError as e:  # pragma: no cover - 取决于环境
@@ -52,6 +56,23 @@ def image_to_raster(
 
     mode = Image.Dither.FLOYDSTEINBERG if dither else Image.Dither.NONE
     mono = img.convert("1", dither=mode)
+
+    if mono.width < max_width:  # 纸宽内居中
+        canvas = Image.new("1", (max_width, mono.height), 1)
+        canvas.paste(mono, ((max_width - mono.width) // 2, 0))
+        mono = canvas
+    return mono
+
+
+def image_to_raster(
+    source: bytes | str | Path,
+    *,
+    max_width: int = MAX_WIDTH,
+    max_height: int = 400,
+    dither: bool = True,
+) -> bytes:
+    """返回 ESC/POS 位图命令（``GS v 0`` 头 + 1bit 数据，1=黑）。"""
+    mono = prepare_bitmap(source, max_width=max_width, max_height=max_height, dither=dither)
 
     stride = (mono.width + 7) // 8
     # Pillow 的 1bit 输出里 1=白；ESC/POS 里 1=黑，所以要反相

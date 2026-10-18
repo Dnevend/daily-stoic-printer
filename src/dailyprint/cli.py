@@ -13,7 +13,7 @@ from .data import build as build_data
 from .models import Issue
 from .pipeline import build_issue
 from .printers import build_printer
-from .render import encode, render, test_page
+from .render import encode, render, test_page, write_preview
 from .sources import available_types
 from .storage import Store
 from .textutil import WIDTH
@@ -121,10 +121,16 @@ def cmd_preview(args: argparse.Namespace, cfg: AppConfig) -> int:
     log.info("文章: %s  (%s)", issue.article.title, issue.article.date)
     log.info("生词: %d 个", len(issue.vocab))
     if args.out:
-        from pathlib import Path
-
-        Path(args.out).expanduser().write_text(text + "\n", encoding="utf-8")
-        log.info("预览: %s", args.out)
+        path = write_preview(
+            issue,
+            text,
+            args.out,
+            columns=cfg.render.width,
+            max_image_height=cfg.render.max_image_height,
+        )
+        log.info("预览: %s", path)
+        if path.suffix.lower() in (".png", ".html", ".htm"):
+            log.info("打开就能看到图片: open %s", path)
     else:
         print(text)
     return 0
@@ -194,7 +200,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("preview", help="排版预览（不打印）")
     _add_source_opts(p)
     _add_render_opts(p)
-    p.add_argument("-o", "--out", help="输出到文件（默认打印到终端）")
+    p.add_argument(
+        "-o",
+        "--out",
+        help="输出文件；后缀 .txt=纯文本、.png=热敏模拟、.html=网页（后两者带图片）",
+    )
     p.set_defaults(func=cmd_preview)
 
     p = sub.add_parser("print", help="抓取 + 排版 + 发送打印机")

@@ -105,10 +105,18 @@ def _png(width: int = 8, height: int = 2, black_first_row: bool = True) -> bytes
 
 
 def test_raster_header_geometry_and_inversion():
-    data = image_to_raster(_png())
+    data = image_to_raster(_png(), max_width=8)
     assert data[:4] == b"\x1dV\x000"
     assert data[4:8] == bytes([1, 0, 2, 0])  # stride=1 byte, height=2
     assert data[8:] == b"\xff\x00"  # 黑行全 1、白行全 0（位图 1=黑）
+
+
+def test_raster_pads_and_centers_narrow_image_on_paper():
+    data = image_to_raster(_png(width=8, height=2), max_width=24)  # 纸宽 24 dots
+    stride = data[4] | (data[5] << 8)
+    assert stride == 3  # 24 dots -> 3 bytes
+    # 8 个黑点居中在 24 宽的纸里：左右各 8 个白点
+    assert data[8:11] == bytes([0x00, 0xFF, 0x00])
 
 
 def test_raster_scales_down_to_max_width():

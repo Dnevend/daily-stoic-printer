@@ -1,7 +1,8 @@
-"""排版与编码。"""
+"""排版、编码与预览导出。"""
 
 from .escpos import encode
-from .raster import RasterError, available, image_to_raster
+from .preview import write_html, write_png, write_preview
+from .raster import RasterError, available, image_to_raster, prepare_bitmap
 from .receipt import render, test_page
 
 __all__ = [
@@ -9,6 +10,10 @@ __all__ = [
     "available",
     "encode",
     "image_to_raster",
+    "prepare_bitmap",
     "render",
     "test_page",
+    "write_html",
+    "write_png",
+    "write_preview",
 ]
