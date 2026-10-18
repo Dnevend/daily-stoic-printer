@@ -1,14 +1,15 @@
 # 抓取的内容（个人学习用，不入库）
 articles/
 prints/
-preview.txt
+preview*.txt
 *.bin
 
-# 第三方数据缓存（由 `dailyprint build-data` 生成）
+# 第三方数据与缓存（由 build-data / 运行生成）
 data/*.csv
 data/*.tsv
 data/*.part
 data/wordfreq.txt
+data/cache/
 
 # 本机配置与日志
 config.toml

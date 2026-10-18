@@ -38,10 +38,24 @@ class ImageRef:
 
 
 @dataclass
+class Cover:
+    """封面图（从外部图源取），可带署名行。"""
+
+    image: ImageRef
+    credit: str = ""
+
+
+@dataclass
 class Issue:
-    """一期内容 = 文章 + 配图 + 译文 + 生词表。"""
+    """一期内容 = 文章 + 封面 + 配图 + 译文 + 生词表。"""
 
     article: Article
     vocab: list[VocabItem] = field(default_factory=list)
     translation: str = ""  # 正文的中文译文（可选）
     images: list[ImageRef] = field(default_factory=list)  # 要打印的正文配图
+    cover: Cover | None = None  # 封面图（可选）
+
+    def all_images(self) -> list[ImageRef]:
+        """封面 + 正文配图，按打印顺序。"""
+        items = [self.cover.image] if self.cover else []
+        return [*items, *self.images]

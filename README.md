@@ -47,6 +47,9 @@ printed: 2026-10-18 09:00
   `--no-translation` 可关闭
 - **正文配图**：打印正文里的配图（自动跳过链到商店/推广页的图），位图走 ESC/POS `GS v 0`。
   需要 Pillow：`uv pip install -e ".[images]"`（不装也能跑，只是不打图）；`--no-images` 可关闭
+- **封面图**：Daily Stoic 自己没图（有的也是推广图），所以从外部取一张当封面：
+  默认在 Wikimedia Commons 按关键词搜（公版/CC，会打印作者与许可），也可切 `picsum`（随机美图）、
+  `local`（本地固定图）或 `none`；`--no-cover` 可关闭
 
 ## 安装
 
@@ -96,7 +99,7 @@ uv pip install -e ".[dev]"        # 或 make install
 | `test-print` | 发送测试页 |
 
 通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--keep-promos`、
-`--no-translation`、`--no-images`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
+`--no-translation`、`--no-images`、`--no-cover`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
 
 ## 配置
 

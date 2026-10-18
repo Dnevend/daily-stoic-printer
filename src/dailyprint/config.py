@@ -43,6 +43,21 @@ class RenderConfig:
 
 
 @dataclass
+class CoverConfig:
+    source: str = "wikimedia"  # wikimedia | picsum | local | none
+    keywords: tuple[str, ...] = (
+        "marcus aurelius bust",
+        "seneca statue",
+        "epictetus",
+        "stoicism",
+    )
+    local_path: str = ""
+    width: int = 576
+    height: int = 320
+    credit: bool = True  # 是否打印图片来源/许可
+
+
+@dataclass
 class TranslationConfig:
     target: str = "zh-CN"
     providers: tuple[str, ...] = ("mymemory", "google")
@@ -104,6 +119,7 @@ class AppConfig:
     source: str = "daily-stoic"
     render: RenderConfig = field(default_factory=RenderConfig)
     translation: TranslationConfig = field(default_factory=TranslationConfig)
+    cover: CoverConfig = field(default_factory=CoverConfig)
     printer: PrinterConfig = field(default_factory=PrinterConfig)
     paths: Paths = field(default_factory=lambda: Paths(project_root()))
     sources: dict[str, dict] = field(default_factory=lambda: dict(DEFAULT_SOURCES))
@@ -165,6 +181,8 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         cfg.render = _render_config(cfg.render, data["render"])
     if "translation" in data:
         cfg.translation = _translation_config(cfg.translation, data["translation"])
+    if "cover" in data:
+        cfg.cover = _cover_config(cfg.cover, data["cover"])
     if "printer" in data:
         cfg.printer = PrinterConfig(**{**cfg.printer.__dict__, **data["printer"]})
     if "paths" in data and data["paths"].get("home"):
@@ -185,3 +203,10 @@ def _translation_config(current: TranslationConfig, over: dict) -> TranslationCo
     if isinstance(over.get("providers"), list):
         over["providers"] = tuple(over["providers"])
     return TranslationConfig(**{**current.__dict__, **over})
+
+
+def _cover_config(current: CoverConfig, over: dict) -> CoverConfig:
+    over = dict(over)
+    if isinstance(over.get("keywords"), list):
+        over["keywords"] = tuple(over["keywords"])
+    return CoverConfig(**{**current.__dict__, **over})

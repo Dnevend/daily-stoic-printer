@@ -26,6 +26,15 @@ def render(
     for ln in wrap_disp(to_ascii(article.title), width):
         lines.append(center_disp(ln, width))
     lines.append("")
+
+    if issue.cover:
+        lines.append("-" * width)
+        lines.append(f"[IMAGE] {issue.cover.image.label}")
+        if issue.cover.credit:
+            for ln in wrap_disp(f"credit: {issue.cover.credit}", width):
+                lines.append(ln)
+        lines.append("")
+
     lines.append("-" * width)
     lines.append("")
     lines.extend(wrap_disp(body, width))

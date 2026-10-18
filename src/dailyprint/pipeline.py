@@ -6,8 +6,10 @@ import logging
 
 from .config import AppConfig, Paths
 from .enrich import (
+    CoverRequest,
     TranslationError,
     Translator,
+    fetch_cover,
     fetch_image,
     load_dictionary,
     select_content_images,
@@ -48,6 +50,37 @@ def build_issue(cfg: AppConfig, source: str | None = None) -> Issue:
         article.text = md_to_plain(body_md)
 
     issue = Issue(article=article)
+
+    if cfg.cover.source != "none":
+        seed = article.date or article.title
+        try:
+            cover = fetch_cover(
+                CoverRequest(
+                    source=cfg.cover.source,
+                    keywords=cfg.cover.keywords,
+                    local_path=cfg.cover.local_path,
+                    width=cfg.cover.width,
+                    height=cfg.cover.height,
+                ),
+                cfg.paths.image_cache,
+                seed=seed,
+            )
+        except Exception as e:  # noqa: BLE001
+            log.warning("封面获取失败，跳过封面: %s", e)
+            cover = None
+        if cover is not None and cover.image.path is None:
+            try:
+                cover.image.path = fetch_image(cover.image.url, cfg.paths.image_cache)
+            except Exception as e:  # noqa: BLE001
+                log.warning("封面下载失败，跳过封面: %s", e)
+                cover = None
+        if cover is not None:
+            issue.cover = cover
+            log.info(
+                "封面: %s%s",
+                cover.image.label,
+                f"  ({cover.credit})" if cover.credit else "",
+            )
 
     if cfg.render.images != "off":
         refs = select_content_images(

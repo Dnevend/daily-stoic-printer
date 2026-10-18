@@ -35,6 +35,7 @@ def _add_render_opts(p: argparse.ArgumentParser) -> None:
     p.add_argument("--keep-promos", action="store_true", help="不过滤推广/CTA 段落")
     p.add_argument("--no-translation", action="store_true", help="不打印中文译文")
     p.add_argument("--no-images", action="store_true", help="不打印正文配图")
+    p.add_argument("--no-cover", action="store_true", help="不打印封面图")
     p.add_argument("--no-vocab", action="store_true", help="不印生词表")
     p.add_argument("--no-zh", action="store_true", help="不印中文释义（打印机不支持中文时用）")
 
@@ -62,6 +63,8 @@ def _apply_overrides(args: argparse.Namespace, cfg: AppConfig) -> None:
         render_cfg.translation = False
     if getattr(args, "no_images", False):
         render_cfg.images = "off"
+    if getattr(args, "no_cover", False):
+        cfg.cover.source = "none"
     if getattr(args, "no_vocab", False):
         render_cfg.vocab = False
     if getattr(args, "no_zh", False):
@@ -147,7 +150,7 @@ def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
             text,
             chinese=cfg.render.chinese,
             cut=cfg.printer.cut,
-            images={img.label: img.path for img in issue.images if img.path},
+            images={img.label: img.path for img in issue.all_images() if img.path},
             max_image_height=cfg.render.max_image_height,
         )
     )

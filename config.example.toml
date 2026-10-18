@@ -21,6 +21,15 @@ max_image_height = 400  # 位图最大高度（dots，越小越省纸）
 target = "zh-CN"
 providers = ["mymemory", "google"]
 email = ""            # MyMemory 额度：匿名 5000 字符/天，填邮箱可到 50000
+
+# 封面图（从外部图源取一张；同一天内稳定，换天换图）
+[cover]
+source = "wikimedia"      # wikimedia（主题图）| picsum（随机美图）| local（本地图）| none
+keywords = ["marcus aurelius bust", "seneca statue", "epictetus", "stoicism"]
+# local_path = "/Users/you/Pictures/cover.jpg"   # source = "local" 时使用
+width = 576
+height = 320
+credit = true             # 打印作者/许可/来源（wikimedia 的图建议保留）
 chinese = true    # 打印中文释义（不支持中文的机型设为 false）
 vocab = true      # 是否附生词表
 
