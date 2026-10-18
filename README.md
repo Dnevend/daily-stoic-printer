@@ -109,3 +109,10 @@ lpadmin -p XP-80T -E -v "<usb://...>" -m raw
 - 词典：[ECDICT](https://github.com/skywind3000/ECDICT)
 
 词汇表基于词频与词形还原自动挑选，仅作学习参考。
+
+## License
+
+代码采用 [MIT License](LICENSE)。
+
+本仓库**不包含**抓取的 Daily Stoic 文章、词频表与 ECDICT 词典数据（均已被 `.gitignore` 忽略），
+请自行运行 `build_data.py` / `fetch_latest.py` 获取，并遵守各自来源的使用条款。
