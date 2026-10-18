@@ -92,11 +92,43 @@ uv pip install -e ".[dev,images]"
 | `build-data [--force]` | 下载并构建词频表 / 词典 |
 | `fetch [--count N] [--images]` | 抓文章存 Markdown（可选把图片下到本地） |
 | `preview [-o FILE]` | 排版预览；后缀决定格式：`.txt` / `.png`（热敏模拟，带图）/ `.html`（网页，带图） |
-| `print [--ip IP \| --queue NAME] [--dry-run]` | 抓取 + 排版 + 发送；`--dry-run` 只排版留档不发送 |
+| `print [--ip IP \| --queue NAME] [--dry-run] [--no-audio] [--audio-voice VOICE]` | 抓取 + 排版 + 发送；`--dry-run` 只排版留档不发送 |
+| `audio [-o FILE] [--send] [--no-send] [--voice VOICE] [--include-translation] [--max-words N]` | 只生成语音（可选发送 Telegram） |
 | `test-print [--ip IP \| --queue NAME]` | 发送测试页 |
 
 通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--keep-promos`、
 `--no-translation`、`--no-images`、`--no-cover`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
+
+## 文章语音（TTS + Telegram）
+
+每天 `print` 时，除打印外还会自动把**英文正文**合成语音，通过 OpenClaw 发到 Telegram：
+
+```bash
+.venv/bin/dailyprint print --ip 192.168.1.50          # 默认同时生成并发送语音
+.venv/bin/dailyprint print --ip 192.168.1.50 --no-audio   # 今天不要语音
+.venv/bin/dailyprint audio --send                      # 手动生成并发送一条
+.venv/bin/dailyprint audio -o /path/to/out.ogg --no-send  # 只生成文件
+```
+
+- 使用 macOS 内置 `/usr/bin/say` 离线合成，**无需额外 Python 依赖**。
+- 默认音色 `Samantha`；可用 `--audio-voice Alex` 或配置 `[audio].voice` 切换。
+- 若 `/opt/homebrew/bin/ffmpeg` 存在，会转成 Telegram 语音条更喜欢的 **OGG/Opus**；否则直接保留 AIFF/WAV。
+- 若 `say`、`ffmpeg` 或 `openclaw` 任一缺失/失败，只记 warning，**不会导致打印失败或返回非 0**。
+- 语音留档在 `prints/audio/YYYY-MM-DD.ogg`（由 `[audio].out_dir` 控制）。
+
+在 `config.toml` 里开关：
+
+```toml
+[audio]
+enabled = true               # print 时是否生成/发送语音
+voice = "Samantha"           # say 音色
+include_translation = false  # 是否连中文译文一起读
+max_words = 0                # 限制朗读词数（0 = 全文）
+send = true                  # 是否通过 openclaw 发送
+channel = "telegram"
+target = "1419937886"
+# out_dir = "/Users/you/Music/dailyprint"  # 留档目录；空 = prints/audio
+```
 
 ## 配置
 
@@ -136,6 +168,15 @@ kind = "network"        # network（网口，推荐）| cups
 ip = "192.168.1.50"
 port = 9100
 # queue = "XP-80T"      # kind = "cups" 时填队列名
+
+[audio]
+enabled = true
+voice = "Samantha"
+include_translation = false
+max_words = 0
+send = true
+channel = "telegram"
+target = "1419937886"
 
 [sources.daily-stoic]
 type = "daily_stoic"
@@ -257,7 +298,8 @@ src/dailyprint/
 ├── textutil.py        显示宽度、混排换行、HTML/Markdown 清理、词形还原
 ├── sources/           内容来源：base（基类）、daily_stoic、rss、http
 ├── enrich/            封面(cover)、正文配图(images)、开发过滤(promo)、
-│                      生词(vocab)、词典(dictionary)、翻译(translate)
+│                      生词(vocab)、词典(dictionary)、翻译(translate)、
+│                      语音(audio)
 ├── render/            排版(receipt)、ESC/POS 编码(escpos)、位图(raster)、带图预览(preview)
 └── printers/          打印机：network（9100）、cups（lp -o raw）
 tests/                 pytest 测试（含 HTML/feed fixture，不联网）

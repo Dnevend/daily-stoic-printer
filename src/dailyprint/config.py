@@ -74,6 +74,18 @@ class PrinterConfig:
 
 
 @dataclass
+class AudioConfig:
+    enabled: bool = True
+    voice: str = "Samantha"
+    include_translation: bool = False
+    max_words: int = 0  # 0 = 不限制
+    send: bool = True
+    channel: str = "telegram"
+    target: str = "1419937886"
+    out_dir: str = ""  # 空 = 默认 prints/audio
+
+
+@dataclass
 class Paths:
     home: Path
 
@@ -102,6 +114,10 @@ class Paths:
         return self.home / "prints"
 
     @property
+    def audio(self) -> Path:
+        return self.prints / "audio"
+
+    @property
     def logs(self) -> Path:
         return self.home / "logs"
 
@@ -121,6 +137,7 @@ class AppConfig:
     translation: TranslationConfig = field(default_factory=TranslationConfig)
     cover: CoverConfig = field(default_factory=CoverConfig)
     printer: PrinterConfig = field(default_factory=PrinterConfig)
+    audio: AudioConfig = field(default_factory=AudioConfig)
     paths: Paths = field(default_factory=lambda: Paths(project_root()))
     sources: dict[str, dict] = field(default_factory=lambda: dict(DEFAULT_SOURCES))
     config_path: Path | None = None
@@ -187,6 +204,8 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         cfg.cover = _dataclass_from(CoverConfig, cfg.cover, data["cover"], "cover")
     if "printer" in data:
         cfg.printer = _dataclass_from(PrinterConfig, cfg.printer, data["printer"], "printer")
+    if "audio" in data:
+        cfg.audio = _dataclass_from(AudioConfig, cfg.audio, data["audio"], "audio")
     if "paths" in data and data["paths"].get("home"):
         cfg.paths = Paths(Path(data["paths"]["home"]).expanduser())
     if "sources" in data:

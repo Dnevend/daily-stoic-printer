@@ -6,10 +6,12 @@ import argparse
 import logging
 import sys
 import time
+from pathlib import Path
 
 from . import __version__
 from .config import AppConfig, load_config
 from .data import build as build_data
+from .enrich.audio import build_speech_text, send_audio, synthesize
 from .models import Issue
 from .pipeline import build_issue
 from .printers import build_printer
@@ -69,6 +71,10 @@ def _apply_overrides(args: argparse.Namespace, cfg: AppConfig) -> None:
         render_cfg.vocab = False
     if getattr(args, "no_zh", False):
         render_cfg.chinese = False
+
+    audio_voice = getattr(args, "audio_voice", None)
+    if audio_voice is not None:
+        cfg.audio.voice = audio_voice
 
     if getattr(args, "ip", None):
         cfg.printer.kind, cfg.printer.ip = "network", args.ip
@@ -136,6 +142,34 @@ def cmd_preview(args: argparse.Namespace, cfg: AppConfig) -> int:
     return 0
 
 
+def _run_audio(args: argparse.Namespace, cfg: AppConfig, issue: Issue) -> None:
+    """生成并发送语音；任何异常都被吞掉，不影响打印主流程。"""
+    try:
+        ac = cfg.audio
+        if getattr(args, "no_audio", False) or not ac.enabled:
+            return
+        out_dir = Path(ac.out_dir).expanduser() if ac.out_dir else cfg.paths.audio
+        out_dir.mkdir(parents=True, exist_ok=True)
+        date = issue.article.date or "unknown"
+        out_path = out_dir / f"{date}.ogg"
+        speech = build_speech_text(
+            issue,
+            include_translation=ac.include_translation,
+            max_words=ac.max_words,
+        )
+        if not speech.strip():
+            log.warning("正文为空，跳过语音合成")
+            return
+        audio_path = synthesize(speech, out_path, voice=ac.voice)
+        if audio_path is None:
+            return
+        if ac.send:
+            caption = f"{issue.article.title} · {date}"
+            send_audio(audio_path, channel=ac.channel, target=ac.target, caption=caption)
+    except Exception as e:  # noqa: BLE001
+        log.warning("语音处理失败（不影响打印）: %s", e)
+
+
 def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
     issue: Issue = build_issue(cfg)
     text = render(
@@ -161,6 +195,41 @@ def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
         )
     )
     log.info("已发送 -> %r", printer)
+    _run_audio(args, cfg, issue)
+    return 0
+
+
+def cmd_audio(args: argparse.Namespace, cfg: AppConfig) -> int:
+    issue = build_issue(cfg)
+    ac = cfg.audio
+    if args.voice:
+        ac.voice = args.voice
+    out_path = (
+        Path(args.out)
+        if args.out
+        else cfg.paths.audio / f"{issue.article.date or 'audio'}.ogg"
+    )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    speech = build_speech_text(
+        issue,
+        include_translation=args.include_translation or ac.include_translation,
+        max_words=args.max_words if args.max_words is not None else ac.max_words,
+    )
+    if not speech.strip():
+        log.warning("正文为空，跳过语音合成")
+        return 0
+    audio_path = synthesize(speech, out_path, voice=ac.voice)
+    if audio_path is None:
+        return 0
+    log.info("语音文件: %s", audio_path)
+    should_send = (
+        args.send
+        if args.send is not None
+        else (args.no_send is not True and ac.send)
+    )
+    if should_send:
+        caption = f"{issue.article.title} · {issue.article.date or 'unknown'}"
+        send_audio(audio_path, channel=ac.channel, target=ac.target, caption=caption)
     return 0
 
 
@@ -212,7 +281,20 @@ def build_parser() -> argparse.ArgumentParser:
     _add_render_opts(p)
     _add_printer_opts(p)
     p.add_argument("--dry-run", action="store_true", help="只排版留档，不发送")
+    p.add_argument("--no-audio", action="store_true", help="不生成/发送语音")
+    p.add_argument("--audio-voice", help="覆盖朗读音色（如 Samantha/Alex）")
     p.set_defaults(func=cmd_print)
+
+    p = sub.add_parser("audio", help="生成文章语音（可选发送 Telegram）")
+    _add_source_opts(p)
+    p.add_argument("-o", "--out", help="输出文件路径（默认 prints/audio/YYYY-MM-DD.ogg）")
+    p.add_argument("--voice", help="朗读音色（默认 Samantha）")
+    p.add_argument("--include-translation", action="store_true", help="附带中文译文")
+    p.add_argument("--max-words", type=int, help="最多朗读多少词（0=不限）")
+    send_group = p.add_mutually_exclusive_group()
+    send_group.add_argument("--send", action="store_true", default=None, help="发送 Telegram")
+    send_group.add_argument("--no-send", action="store_true", help="不发送 Telegram")
+    p.set_defaults(func=cmd_audio)
 
     p = sub.add_parser("test-print", help="发送测试页（检查宽度/对齐/切纸）")
     _add_printer_opts(p)
