@@ -51,7 +51,10 @@ def build_issue(cfg: AppConfig, source: str | None = None) -> Issue:
 
     if cfg.render.images != "off":
         refs = select_content_images(
-            body_md, limit=cfg.render.max_images, skip_promo=cfg.render.images == "content"
+            body_md,
+            limit=cfg.render.max_images,
+            skip_promo=cfg.render.images == "content",
+            base_url=article.url,
         )
         kept: list[ImageRef] = []
         for ref in refs:

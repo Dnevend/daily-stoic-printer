@@ -41,6 +41,26 @@ def test_select_all_mode_keeps_promo_images():
     assert len(select_content_images(LINKED_PROMO, skip_promo=False)) == 1
 
 
+def test_select_resolves_relative_urls_with_base():
+    md = "![photo](/media/2026/10/pic.jpg)"
+    images = select_content_images(md, base_url="https://example.com/posts/hello/")
+    assert [i.url for i in images] == ["https://example.com/media/2026/10/pic.jpg"]
+
+
+def test_select_skips_relative_urls_without_base():
+    assert select_content_images("![photo](/media/pic.jpg)") == []
+
+
+def test_select_ignores_data_urls():
+    md = "![inline](data:image/gif;base64,R0lGODlhAQABAAAAACw=)"
+    assert select_content_images(md, base_url="https://example.com/") == []
+
+
+def test_select_handles_markdown_image_titles():
+    md = '![photo](https://example.com/a.jpg "A caption")'
+    assert [i.url for i in select_content_images(md)] == ["https://example.com/a.jpg"]
+
+
 def test_labels_are_unique_for_same_filename():
     a = "![x](https://a.example.com/2026/10/photo.jpg)"
     b = "![y](https://b.example.com/2026/11/photo.jpg)"

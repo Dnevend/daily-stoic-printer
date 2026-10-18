@@ -20,10 +20,23 @@ log = logging.getLogger("dailyprint")
 
 # [![alt](img)](link) —— 图片被链接包着（推广图常见）
 _LINKED_IMG = re.compile(
-    r"\[\s*!\[[^\]]*\]\((https?://[^)]+)\)\s*\]\((https?://[^)]+)\)"
+    r"\[\s*!\[[^\]]*\]\(([^)\s]+)[^)]*\)\s*\]\(([^)\s]+)[^)]*\)"
 )
-# ![alt](img)
-_PLAIN_IMG = re.compile(r"!\[[^\]]*\]\((https?://[^)]+)\)")
+# ![alt](img) 或 ![alt](img "title")
+_PLAIN_IMG = re.compile(r"!\[[^\]]*\]\(([^)\s]+)[^)]*\)")
+
+
+def _absolute(url: str, base: str) -> str:
+    """相对地址按文章 URL 补全（RSS 里常见）；只接受 http(s)，data:/cid: 一律忽略。"""
+    url = url.strip().strip("<>")
+    if url.startswith(("http://", "https://")):
+        return url
+    if not url or url.startswith(("data:", "cid:", "#")):
+        return ""
+    if not base:
+        return ""
+    resolved = urllib.parse.urljoin(base, url)
+    return resolved if resolved.startswith(("http://", "https://")) else ""
 
 
 def _label(url: str, used: set[str]) -> str:
@@ -42,21 +55,24 @@ def _label(url: str, used: set[str]) -> str:
 
 
 def select_content_images(
-    md: str, *, limit: int = 2, skip_promo: bool = True
+    md: str, *, limit: int = 2, skip_promo: bool = True, base_url: str = ""
 ) -> list[ImageRef]:
-    """从 Markdown 里挑出正文配图（保持出现顺序、去重、限量）。"""
+    """从 Markdown 里挑出正文配图（保持出现顺序、去重、限量）。
+
+    ``base_url`` 用于补全相对地址（RSS 里常见），一般是文章自身的 URL。
+    """
     found: list[ImageRef] = []
 
     def take_linked(match: re.Match) -> str:
-        img_url, link_url = match.group(1), match.group(2)
-        if not skip_promo or not (is_promo_link(link_url) or is_promo_link(img_url)):
+        img_url, link_url = _absolute(match.group(1), base_url), match.group(2)
+        if img_url and not (skip_promo and (is_promo_link(link_url) or is_promo_link(img_url))):
             found.append(ImageRef(url=img_url, label=""))
         return " "  # 已处理，从待扫描文本里移除
 
     rest = _LINKED_IMG.sub(take_linked, md)
     for match in _PLAIN_IMG.finditer(rest):
-        url = match.group(1)
-        if skip_promo and is_promo_link(url):
+        url = _absolute(match.group(1), base_url)
+        if not url or (skip_promo and is_promo_link(url)):
             continue
         found.append(ImageRef(url=url, label=""))
 
