@@ -22,7 +22,7 @@
 4. **`src/dailyprint/cli.py`**
    - `print` 子命令增加 `--audio-engine`、`--audio-rate`。
    - `audio` 子命令增加 `--engine`、`--rate`、`--say-voice`、`--say-rate`。
-   - `_run_audio` / `cmd_audio` 发送前先把文件放到 `send_dir`，发送成功后再归档到 `archive_dir`；归档失败不影响发送。
+   - `_run_audio` / `cmd_audio` 发送前先把文件放到 `send_dir`，**发送成功后再归档**到 `archive_dir`；归档失败不影响发送；发送目录与归档目录为同一路径时不重复复制。
 
 5. **示例配置与文档**
    - `config.example.toml` 更新 `[audio]` 示例。

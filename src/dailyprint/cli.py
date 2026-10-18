@@ -179,8 +179,9 @@ def _run_audio(args: argparse.Namespace, cfg: AppConfig, issue: Issue) -> None:
                     arc_dir = archive_dir(ac, cfg.paths)
                     arc_dir.mkdir(parents=True, exist_ok=True)
                     arc_path = arc_dir / f"{date}.ogg"
-                    shutil.copy2(audio_path, arc_path)
-                    log.info("语音归档: %s", arc_path)
+                    if arc_path.resolve() != audio_path.resolve():
+                        shutil.copy2(audio_path, arc_path)
+                        log.info("语音归档: %s", arc_path)
                 except Exception as e:  # noqa: BLE001
                     log.warning("语音归档失败（不影响发送）: %s", e)
     except Exception as e:  # noqa: BLE001
@@ -266,8 +267,9 @@ def cmd_audio(args: argparse.Namespace, cfg: AppConfig) -> int:
                 arc_dir = archive_dir(ac, cfg.paths)
                 arc_dir.mkdir(parents=True, exist_ok=True)
                 arc_path = arc_dir / f"{date}.ogg"
-                shutil.copy2(audio_path, arc_path)
-                log.info("语音归档: %s", arc_path)
+                if arc_path.resolve() != audio_path.resolve():
+                    shutil.copy2(audio_path, arc_path)
+                    log.info("语音归档: %s", arc_path)
             except Exception as e:  # noqa: BLE001
                 log.warning("语音归档失败（不影响发送）: %s", e)
     return 0
