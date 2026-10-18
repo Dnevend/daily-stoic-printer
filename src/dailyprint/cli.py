@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -75,6 +76,12 @@ def _apply_overrides(args: argparse.Namespace, cfg: AppConfig) -> None:
     audio_voice = getattr(args, "audio_voice", None)
     if audio_voice is not None:
         cfg.audio.voice = audio_voice
+    audio_engine = getattr(args, "audio_engine", None)
+    if audio_engine is not None:
+        cfg.audio.engine = audio_engine
+    audio_rate = getattr(args, "audio_rate", None)
+    if audio_rate is not None:
+        cfg.audio.rate = audio_rate
 
     if getattr(args, "ip", None):
         cfg.printer.kind, cfg.printer.ip = "network", args.ip
@@ -148,10 +155,11 @@ def _run_audio(args: argparse.Namespace, cfg: AppConfig, issue: Issue) -> None:
         ac = cfg.audio
         if getattr(args, "no_audio", False) or not ac.enabled:
             return
-        out_dir = Path(ac.out_dir).expanduser() if ac.out_dir else cfg.paths.audio
-        out_dir.mkdir(parents=True, exist_ok=True)
+        from .enrich.audio import archive_dir, send_dir
+
         date = issue.article.date or "unknown"
-        out_path = out_dir / f"{date}.ogg"
+        send_path = send_dir(ac) / f"{date}.ogg"
+        send_path.parent.mkdir(parents=True, exist_ok=True)
         speech = build_speech_text(
             issue,
             include_translation=ac.include_translation,
@@ -160,12 +168,21 @@ def _run_audio(args: argparse.Namespace, cfg: AppConfig, issue: Issue) -> None:
         if not speech.strip():
             log.warning("正文为空，跳过语音合成")
             return
-        audio_path = synthesize(speech, out_path, voice=ac.voice)
+        audio_path = synthesize(speech, send_path, cfg=ac)
         if audio_path is None:
             return
         if ac.send:
             caption = f"{issue.article.title} · {date}"
-            send_audio(audio_path, channel=ac.channel, target=ac.target, caption=caption)
+            sent = send_audio(audio_path, channel=ac.channel, target=ac.target, caption=caption)
+            if sent:
+                try:
+                    arc_dir = archive_dir(ac, cfg.paths)
+                    arc_dir.mkdir(parents=True, exist_ok=True)
+                    arc_path = arc_dir / f"{date}.ogg"
+                    shutil.copy2(audio_path, arc_path)
+                    log.info("语音归档: %s", arc_path)
+                except Exception as e:  # noqa: BLE001
+                    log.warning("语音归档失败（不影响发送）: %s", e)
     except Exception as e:  # noqa: BLE001
         log.warning("语音处理失败（不影响打印）: %s", e)
 
@@ -200,16 +217,30 @@ def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
 
 
 def cmd_audio(args: argparse.Namespace, cfg: AppConfig) -> int:
+    from .enrich.audio import archive_dir, send_dir
+
     issue = build_issue(cfg)
     ac = cfg.audio
     if args.voice:
         ac.voice = args.voice
-    out_path = (
-        Path(args.out)
-        if args.out
-        else cfg.paths.audio / f"{issue.article.date or 'audio'}.ogg"
-    )
+    if args.engine:
+        ac.engine = args.engine
+    if args.rate:
+        ac.rate = args.rate
+    if args.say_voice:
+        ac.say_voice = args.say_voice
+    if args.say_rate is not None:
+        ac.say_rate = args.say_rate
+
+    date = issue.article.date or "audio"
+    if args.out:
+        out_path = Path(args.out)
+    elif args.send:
+        out_path = send_dir(ac) / f"{date}.ogg"
+    else:
+        out_path = cfg.paths.audio / f"{date}.ogg"
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
     speech = build_speech_text(
         issue,
         include_translation=args.include_translation or ac.include_translation,
@@ -218,7 +249,7 @@ def cmd_audio(args: argparse.Namespace, cfg: AppConfig) -> int:
     if not speech.strip():
         log.warning("正文为空，跳过语音合成")
         return 0
-    audio_path = synthesize(speech, out_path, voice=ac.voice)
+    audio_path = synthesize(speech, out_path, cfg=ac)
     if audio_path is None:
         return 0
     log.info("语音文件: %s", audio_path)
@@ -229,7 +260,16 @@ def cmd_audio(args: argparse.Namespace, cfg: AppConfig) -> int:
     )
     if should_send:
         caption = f"{issue.article.title} · {issue.article.date or 'unknown'}"
-        send_audio(audio_path, channel=ac.channel, target=ac.target, caption=caption)
+        sent = send_audio(audio_path, channel=ac.channel, target=ac.target, caption=caption)
+        if sent:
+            try:
+                arc_dir = archive_dir(ac, cfg.paths)
+                arc_dir.mkdir(parents=True, exist_ok=True)
+                arc_path = arc_dir / f"{date}.ogg"
+                shutil.copy2(audio_path, arc_path)
+                log.info("语音归档: %s", arc_path)
+            except Exception as e:  # noqa: BLE001
+                log.warning("语音归档失败（不影响发送）: %s", e)
     return 0
 
 
@@ -282,13 +322,19 @@ def build_parser() -> argparse.ArgumentParser:
     _add_printer_opts(p)
     p.add_argument("--dry-run", action="store_true", help="只排版留档，不发送")
     p.add_argument("--no-audio", action="store_true", help="不生成/发送语音")
-    p.add_argument("--audio-voice", help="覆盖朗读音色（如 Samantha/Alex）")
+    p.add_argument("--audio-voice", help="覆盖 edge-tts 朗读音色（如 en-US-AriaNeural）")
+    p.add_argument("--audio-engine", help="覆盖 TTS 引擎（auto | edge | say）")
+    p.add_argument("--audio-rate", help="覆盖 edge-tts 语速（如 -10%%、0%%）")
     p.set_defaults(func=cmd_print)
 
     p = sub.add_parser("audio", help="生成文章语音（可选发送 Telegram）")
     _add_source_opts(p)
     p.add_argument("-o", "--out", help="输出文件路径（默认 prints/audio/YYYY-MM-DD.ogg）")
-    p.add_argument("--voice", help="朗读音色（默认 Samantha）")
+    p.add_argument("--voice", help="edge-tts 音色（默认 en-US-AriaNeural）")
+    p.add_argument("--engine", help="TTS 引擎（auto | edge | say）")
+    p.add_argument("--rate", help="edge-tts 语速（默认 -10%%）")
+    p.add_argument("--say-voice", help="降级 say 音色（默认 Samantha）")
+    p.add_argument("--say-rate", type=int, help="降级 say 语速 wpm（默认 160）")
     p.add_argument("--include-translation", action="store_true", help="附带中文译文")
     p.add_argument("--max-words", type=int, help="最多朗读多少词（0=不限）")
     send_group = p.add_mutually_exclusive_group()

@@ -76,13 +76,20 @@ class PrinterConfig:
 @dataclass
 class AudioConfig:
     enabled: bool = True
-    voice: str = "Samantha"
+    engine: str = "auto"  # auto | edge | say
+    voice: str = "en-US-AriaNeural"  # edge-tts 默认音色
+    rate: str = "-10%"  # edge-tts 语速；"0%" 为原速
+    say_voice: str = "Samantha"  # 降级用 say 音色
+    say_rate: int = 160  # 降级用 say 语速（词/分）
     include_translation: bool = False
     max_words: int = 0  # 0 = 不限制
     send: bool = True
     channel: str = "telegram"
     target: str = "1419937886"
-    out_dir: str = ""  # 空 = 默认 prints/audio
+    send_dir: str = ""  # 空 = ~/.openclaw/workspace/.openclaw/tmp/dailyprint-audio
+    archive_dir: str = ""  # 空 = 默认 prints/audio
+    # 兼容上一版命名；out_dir 存在时等价于 archive_dir
+    out_dir: str = ""
 
 
 @dataclass

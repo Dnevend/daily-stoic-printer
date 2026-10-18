@@ -41,14 +41,19 @@ port = 9100
 
 # 语音：每天打印时把文章正文（英文）合成语音发到 Telegram
 [audio]
-enabled = true               # print 时是否生成/发送语音
-voice = "Samantha"           # macOS say 音色；常见选择 Samantha / Alex / Daniel
-include_translation = false  # 是否把中文译文也读出来
-max_words = 0                # 限制朗读词数（0 = 全文）
-send = true                  # 是否通过 openclaw 发送
+enabled = true                   # print 时是否生成/发送语音
+engine = "auto"                  # auto | edge | say；auto 优先 edge-tts，失败降级 say
+voice = "en-US-AriaNeural"       # edge-tts 神经音色（常见：en-US-JennyNeural / en-US-GuyNeural / en-GB-RyanNeural）
+rate = "-10%"                    # edge-tts 语速；"0%" 原速，负值更慢
+say_voice = "Samantha"           # 降级用 macOS say 音色
+say_rate = 160                   # 降级用 say 语速（词/分）；默认 175 偏快
+include_translation = false      # 是否把中文译文也读出来
+max_words = 0                    # 限制朗读词数（0 = 全文）
+send = true                      # 是否通过 openclaw 发送
 channel = "telegram"
 target = "1419937886"
-# out_dir = "/Users/you/Music/dailyprint"  # 留档目录；空 = prints/audio
+# send_dir = "/Users/you/.openclaw/workspace/.openclaw/tmp/dailyprint-audio"  # 发送用目录；空 = 默认允许目录
+# archive_dir = "/Users/you/Music/dailyprint"                              # 留档目录；空 = prints/audio
 
 # ---------------------------------------------------------------- 来源
 # 每加一个来源就写一段 [sources.<名字>]，然后用 `dailyprint sources` 查看，

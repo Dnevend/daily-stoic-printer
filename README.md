@@ -51,12 +51,13 @@ printed: 2026-10-18 09:00
 | **正文配图** | 打印正文配图，自动跳过链到商店/推广页的图 |
 | **中文译文** | 自动翻译正文（MyMemory，失败切 Google），按段落缓存，重跑不重复请求 |
 | **生词表** | 按词频挑「超出你词汇量」的词（含词形还原），配原文例句 + 中文释义（本地 ECDICT 词典） |
+| **文章语音** | 用 edge-tts 神经音色把英文正文读成语音，自动发到 Telegram；失败降级 macOS say |
 | **推广过滤** | 自动剔除书籍/周边推广段（CTA、"while supplies last" 之类），但正文里引用书籍的段落会保留 |
 | **长文保护** | 正文超过 `max_words`（默认 900 词）时截断，存档仍是全文 |
 | **中英混排排版** | 按显示宽度换行（中文算 2 列），中文走 GB18030 中文模式 |
 | **两种打印机接入** | 网络 9100 端口直发（免驱动）/ CUPS 队列（USB） |
 | **带图预览** | 生成热敏纸模拟 PNG（含 1bit 抖动）或网页，不用打印机就能看 |
-| **可测试** | 纯函数排版 + 97 个 pytest（不联网、不用打印机） |
+| **可测试** | 纯函数排版 + 114 个 pytest（不联网、不用打印机） |
 
 ## 安装
 
@@ -92,8 +93,8 @@ uv pip install -e ".[dev,images]"
 | `build-data [--force]` | 下载并构建词频表 / 词典 |
 | `fetch [--count N] [--images]` | 抓文章存 Markdown（可选把图片下到本地） |
 | `preview [-o FILE]` | 排版预览；后缀决定格式：`.txt` / `.png`（热敏模拟，带图）/ `.html`（网页，带图） |
-| `print [--ip IP \| --queue NAME] [--dry-run] [--no-audio] [--audio-voice VOICE]` | 抓取 + 排版 + 发送；`--dry-run` 只排版留档不发送 |
-| `audio [-o FILE] [--send] [--no-send] [--voice VOICE] [--include-translation] [--max-words N]` | 只生成语音（可选发送 Telegram） |
+| `print [--ip IP \| --queue NAME] [--dry-run] [--no-audio] [--audio-voice VOICE] [--audio-engine auto\|edge\|say] [--audio-rate RATE]` | 抓取 + 排版 + 发送；`--dry-run` 只排版留档不发送 |
+| `audio [-o FILE] [--send] [--no-send] [--voice VOICE] [--engine auto\|edge\|say] [--rate RATE] [--say-voice VOICE] [--say-rate WPM] [--include-translation] [--max-words N]` | 只生成语音（可选发送 Telegram） |
 | `test-print [--ip IP \| --queue NAME]` | 发送测试页 |
 
 通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--keep-promos`、
@@ -110,24 +111,29 @@ uv pip install -e ".[dev,images]"
 .venv/bin/dailyprint audio -o /path/to/out.ogg --no-send  # 只生成文件
 ```
 
-- 使用 macOS 内置 `/usr/bin/say` 离线合成，**无需额外 Python 依赖**。
-- 默认音色 `Samantha`；可用 `--audio-voice Alex` 或配置 `[audio].voice` 切换。
-- 若 `/opt/homebrew/bin/ffmpeg` 存在，会转成 Telegram 语音条更喜欢的 **OGG/Opus**；否则直接保留 AIFF/WAV。
-- 若 `say`、`ffmpeg` 或 `openclaw` 任一缺失/失败，只记 warning，**不会导致打印失败或返回非 0**。
-- 语音留档在 `prints/audio/YYYY-MM-DD.ogg`（由 `[audio].out_dir` 控制）。
+- **默认使用 `uvx edge-tts` 神经音色**（如 `en-US-AriaNeural`），音色自然；**无需安装**，`uvx` 会自动从缓存/网络拉取 `edge-tts`。
+- 若 `uvx`/`edge-tts` 不可用或联网失败，**自动降级**到 macOS 内置 `/usr/bin/say`（音色 `Samantha`，语速放慢到 160 wpm）。
+- 若 `/opt/homebrew/bin/ffmpeg` 存在，会转成 Telegram 语音条更喜欢的 **OGG/Opus**；否则直接保留 edge-tts 的 mp3 或 say 的 AIFF。
+- 若 `edge-tts`/`say`、`ffmpeg` 或 `openclaw` 任一缺失/失败，只记 warning，**不会导致打印失败或返回非 0**。
+- 用于发送的语音先写到 OpenClaw 允许目录 `~/.openclaw/workspace/.openclaw/tmp/dailyprint-audio/`，发送成功后再归档一份到 `prints/audio/YYYY-MM-DD.ogg`；两个目录均可由 `[audio]` 配置覆盖。
 
 在 `config.toml` 里开关：
 
 ```toml
 [audio]
-enabled = true               # print 时是否生成/发送语音
-voice = "Samantha"           # say 音色
-include_translation = false  # 是否连中文译文一起读
-max_words = 0                # 限制朗读词数（0 = 全文）
-send = true                  # 是否通过 openclaw 发送
+enabled = true                   # print 时是否生成/发送语音
+engine = "auto"                  # auto | edge | say；auto 优先 edge，失败降级 say
+voice = "en-US-AriaNeural"       # edge-tts 神经音色（常见：en-US-JennyNeural / en-US-GuyNeural / en-GB-RyanNeural）
+rate = "-10%"                    # edge-tts 语速；"0%" 原速，负值更慢
+say_voice = "Samantha"           # 降级用 say 音色
+say_rate = 160                   # 降级用 say 语速（词/分）；默认 175 偏快
+include_translation = false      # 是否连中文译文一起读
+max_words = 0                    # 限制朗读词数（0 = 全文）
+send = true                      # 是否通过 openclaw 发送
 channel = "telegram"
 target = "1419937886"
-# out_dir = "/Users/you/Music/dailyprint"  # 留档目录；空 = prints/audio
+# send_dir = "/Users/you/.openclaw/workspace/.openclaw/tmp/dailyprint-audio"  # 发送用目录；空 = 默认允许目录
+# archive_dir = "/Users/you/Music/dailyprint"                              # 留档目录；空 = prints/audio
 ```
 
 ## 配置
@@ -313,7 +319,7 @@ articles/ prints/ logs/  存档与日志（不入库）
 ## 开发
 
 ```bash
-make test        # pytest（97 个，约 0.2 秒）
+make test        # pytest（114 个，约 0.2 秒）
 make lint        # ruff
 make fmt         # ruff format
 make preview     # 生成 preview.txt

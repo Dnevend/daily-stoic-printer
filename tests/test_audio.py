@@ -56,11 +56,11 @@ def test_build_speech_text_strips_whitespace():
     assert build_speech_text(issue) == "Hello world."
 
 
-def test_synthesize_missing_say_returns_none(tmp_path: Path):
+def test_synthesize_say_missing_returns_none(tmp_path: Path):
     from dailyprint.enrich import audio as audio_mod
 
     out = tmp_path / "x.ogg"
-    assert audio_mod.synthesize("hi", out, say="/nonexistent/say") is None
+    assert audio_mod.synthesize_say("hi", out, say="/nonexistent/say") is None
 
 
 def test_send_audio_missing_openclaw_returns_false(tmp_path: Path):
@@ -100,3 +100,101 @@ def test_run_audio_swallows_exception(monkeypatch, tmp_path: Path):
 
     monkeypatch.setattr(cli, "synthesize", boom)
     cli._run_audio(args, cfg, issue)  # 不抛即通过
+
+
+def test_synthesize_edge_missing_uvx_returns_none(tmp_path: Path):
+    from dailyprint.enrich import audio as audio_mod
+
+    out = tmp_path / "x.ogg"
+    assert audio_mod.synthesize_edge("hi", out, uvx="/nonexistent/uvx") is None
+
+
+def test_synthesize_uses_edge_when_engine_edge(monkeypatch, tmp_path: Path):
+    from dailyprint.config import AudioConfig
+    from dailyprint.enrich import audio as audio_mod
+
+    cfg = AudioConfig(engine="edge")
+    out = tmp_path / "x.ogg"
+    edge_calls = []
+
+    def fake_edge(text, path, voice, rate, **kwargs):
+        edge_calls.append((text, voice, rate))
+        path.touch()
+        return path
+
+    monkeypatch.setattr(audio_mod, "synthesize_edge", fake_edge)
+
+    def no_say(*a, **k):
+        raise AssertionError("should not call say")
+
+    monkeypatch.setattr(audio_mod, "synthesize_say", no_say)
+    result = audio_mod.synthesize("hello", out, cfg=cfg)
+    assert result == out
+    assert edge_calls == [("hello", cfg.voice, cfg.rate)]
+
+
+def test_synthesize_auto_falls_back_to_say(monkeypatch, tmp_path: Path):
+    from dailyprint.config import AudioConfig
+    from dailyprint.enrich import audio as audio_mod
+
+    cfg = AudioConfig(engine="auto")
+    out = tmp_path / "x.ogg"
+    monkeypatch.setattr(audio_mod, "synthesize_edge", lambda *a, **k: None)
+
+    say_calls = []
+
+    def fake_say(text, path, voice, rate_wpm, **kwargs):
+        say_calls.append((text, voice, rate_wpm))
+        path.touch()
+        return path
+
+    monkeypatch.setattr(audio_mod, "synthesize_say", fake_say)
+    result = audio_mod.synthesize("hello", out, cfg=cfg)
+    assert result == out
+    assert say_calls == [("hello", cfg.say_voice, cfg.say_rate)]
+
+
+def test_synthesize_engine_say_skips_edge(monkeypatch, tmp_path: Path):
+    from dailyprint.config import AudioConfig
+    from dailyprint.enrich import audio as audio_mod
+
+    cfg = AudioConfig(engine="say")
+    out = tmp_path / "x.ogg"
+
+    def fake_edge(*a, **k):
+        raise AssertionError("should not call edge")
+
+    monkeypatch.setattr(audio_mod, "synthesize_edge", fake_edge)
+    monkeypatch.setattr(audio_mod, "synthesize_say", lambda text, path, **k: (path.touch() or path))
+    result = audio_mod.synthesize("hello", out, cfg=cfg)
+    assert result == out
+
+
+def test_audio_config_has_new_fields():
+    from dailyprint.config import AudioConfig
+
+    cfg = AudioConfig()
+    assert cfg.engine == "auto"
+    assert cfg.voice == "en-US-AriaNeural"
+    assert cfg.rate == "-10%"
+    assert cfg.say_voice == "Samantha"
+    assert cfg.say_rate == 160
+
+
+def test_send_dir_and_archive_dir(tmp_path: Path):
+    from dailyprint.config import AudioConfig, Paths
+    from dailyprint.enrich.audio import archive_dir, send_dir
+
+    ac = AudioConfig(send_dir=str(tmp_path / "send"), archive_dir=str(tmp_path / "arc"))
+    paths = Paths(tmp_path)
+    assert send_dir(ac) == tmp_path / "send"
+    assert archive_dir(ac, paths) == tmp_path / "arc"
+
+
+def test_archive_dir_falls_back_to_out_dir(tmp_path: Path):
+    from dailyprint.config import AudioConfig, Paths
+    from dailyprint.enrich.audio import archive_dir
+
+    ac = AudioConfig(archive_dir="", out_dir=str(tmp_path / "legacy"))
+    paths = Paths(tmp_path)
+    assert archive_dir(ac, paths) == tmp_path / "legacy"
