@@ -36,6 +36,14 @@ class RenderConfig:
     max_words: int = 900  # 打印时正文最多保留多少词（0 = 不限制）
     filter_promos: bool = True  # 过滤正文里的推广/CTA 段落
     promo_phrases: tuple[str, ...] = ()  # 追加的促销短语
+    translation: bool = True  # 是否打印中文译文（需要联网，且打印机支持中文）
+
+
+@dataclass
+class TranslationConfig:
+    target: str = "zh-CN"
+    providers: tuple[str, ...] = ("mymemory", "google")
+    email: str = ""  # MyMemory 可选邮箱，可提高每日额度
 
 
 @dataclass
@@ -54,6 +62,14 @@ class Paths:
     @property
     def data(self) -> Path:
         return self.home / "data"
+
+    @property
+    def cache(self) -> Path:
+        return self.data / "cache"
+
+    @property
+    def translation_cache(self) -> Path:
+        return self.cache / "translate"
 
     @property
     def articles(self) -> Path:
@@ -80,6 +96,7 @@ class Paths:
 class AppConfig:
     source: str = "daily-stoic"
     render: RenderConfig = field(default_factory=RenderConfig)
+    translation: TranslationConfig = field(default_factory=TranslationConfig)
     printer: PrinterConfig = field(default_factory=PrinterConfig)
     paths: Paths = field(default_factory=lambda: Paths(project_root()))
     sources: dict[str, dict] = field(default_factory=lambda: dict(DEFAULT_SOURCES))
@@ -139,6 +156,8 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         cfg.render = _render_config(cfg.render, kw)
     if "render" in data:
         cfg.render = _render_config(cfg.render, data["render"])
+    if "translation" in data:
+        cfg.translation = _translation_config(cfg.translation, data["translation"])
     if "printer" in data:
         cfg.printer = PrinterConfig(**{**cfg.printer.__dict__, **data["printer"]})
     if "paths" in data and data["paths"].get("home"):
@@ -152,3 +171,10 @@ def _render_config(current: RenderConfig, over: dict) -> RenderConfig:
     if isinstance(over.get("promo_phrases"), list):
         over["promo_phrases"] = tuple(over["promo_phrases"])
     return RenderConfig(**{**current.__dict__, **over})
+
+
+def _translation_config(current: TranslationConfig, over: dict) -> TranslationConfig:
+    over = dict(over)
+    if isinstance(over.get("providers"), list):
+        over["providers"] = tuple(over["providers"])
+    return TranslationConfig(**{**current.__dict__, **over})

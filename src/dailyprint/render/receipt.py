@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..models import Issue
-from ..textutil import WIDTH, center_disp, to_ascii, wrap_disp
+from ..textutil import WIDTH, center_disp, to_ascii, truncate_words, wrap_disp
 
 
 def render(
@@ -14,11 +14,7 @@ def render(
     ``max_words`` > 0 时，正文超出部分会被截断（存档仍保留全文），避免长文打印成好几米。
     """
     article = issue.article
-    body = article.text
-    truncated = False
-    if max_words > 0 and len(body.split()) > max_words:
-        body = " ".join(body.split()[:max_words])
-        truncated = True
+    body, truncated = truncate_words(article.text, max_words)
 
     lines: list[str] = []
 
@@ -36,6 +32,15 @@ def render(
     if truncated:
         lines.append("")
         lines.append(f"[truncated to first {max_words} words]")
+
+    if issue.translation:
+        lines.append("")
+        lines.append("-" * width)
+        lines.append("TRANSLATION  (中文译文)")
+        lines.append("-" * width)
+        for para in issue.translation.split("\n\n"):
+            lines.extend(wrap_disp(para, width))
+            lines.append("")
 
     if issue.vocab:
         lines.append("")

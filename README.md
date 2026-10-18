@@ -42,6 +42,9 @@ printed: 2026-10-18 09:00
 - **长文保护**：正文超过 `max_words`（默认 900 词）时打印截断，存档仍保留全文
 - **推广过滤**：打印前自动剔除书籍/周边推广段（CTA、"while supplies last" 之类促销话术），
   但正文里引用书籍的段落会保留；存档仍是原文。`--keep-promos` 可关闭
+- **中文译文**：正文自动翻译成中文（默认 MyMemory 免费接口，失败自动切 Google），
+  按段落缓存在 `data/cache/translate/`，重跑不重复请求；翻译失败只跳过译文，不影响正文。
+  `--no-translation` 可关闭
 
 ## 安装
 
@@ -88,7 +91,8 @@ uv pip install -e ".[dev]"        # 或 make install
 | `print [--ip IP \| --queue NAME] [--dry-run]` | 抓取 + 排版 + 发送 |
 | `test-print` | 发送测试页 |
 
-通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--keep-promos`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
+通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--keep-promos`、
+`--no-translation`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
 
 ## 配置
 
@@ -105,6 +109,11 @@ common = 6000
 max_words = 900
 filter_promos = true
 chinese = true
+
+[translation]
+target = "zh-CN"
+providers = ["mymemory", "google"]
+email = ""          # MyMemory 可选：填邮箱可提高每日翻译额度
 
 [printer]
 kind = "network"

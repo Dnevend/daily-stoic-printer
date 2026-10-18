@@ -66,3 +66,16 @@ def test_config_dataclasses_are_independent():
     a.width = 1
     assert b.width == 48
     assert PrinterConfig().port == 9100
+
+
+def test_translation_config_from_toml(tmp_path: Path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        '[translation]\ntarget = "zh-TW"\nproviders = ["google"]\nemail = "me@example.com"\n',
+        encoding="utf-8",
+    )
+    cfg = load_config(path)
+    assert cfg.translation.target == "zh-TW"
+    assert cfg.translation.providers == ("google",)  # TOML 列表被转成 tuple
+    assert cfg.translation.email == "me@example.com"
+    assert cfg.paths.translation_cache == cfg.paths.cache / "translate"

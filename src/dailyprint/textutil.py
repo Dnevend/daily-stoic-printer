@@ -95,6 +95,16 @@ def center_disp(s: str, width: int = WIDTH) -> str:
     return " " * max(0, (width - dlen(s)) // 2) + s
 
 
+def truncate_words(text: str, max_words: int) -> tuple[str, bool]:
+    """按词数截断，返回 (文本, 是否被截断)。``max_words <= 0`` 表示不限制。"""
+    if max_words <= 0:
+        return text, False
+    words = text.split()
+    if len(words) <= max_words:
+        return text, False
+    return " ".join(words[:max_words]), True
+
+
 # ---------------------------------------------------------------- 内容清理
 
 def html_to_text(html: str) -> str:

@@ -29,7 +29,8 @@ class VocabItem:
 
 @dataclass
 class Issue:
-    """一期内容 = 文章 + 生词表。"""
+    """一期内容 = 文章 + 译文 + 生词表。"""
 
     article: Article
     vocab: list[VocabItem] = field(default_factory=list)
+    translation: str = ""  # 正文的中文译文（可选）

@@ -52,6 +52,18 @@ def test_render_keeps_short_articles_intact():
     assert "Think about how rarely" in text
 
 
+def test_render_includes_translation_section():
+    issue = make_issue()
+    issue.translation = (
+        "想想我们很少会全身心地投入到自己正在做的事情里。"
+        "这段中文用来验证译文分区的换行是否按显示宽度处理。"
+    )
+    text = render(issue, width=48)
+    assert "TRANSLATION" in text
+    assert "想想我们很少" in text
+    assert all(dlen(line) <= 48 for line in text.split("\n"))
+
+
 def test_render_without_vocab():
     issue = make_issue()
     issue.vocab = []

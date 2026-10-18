@@ -5,10 +5,16 @@ from __future__ import annotations
 import logging
 
 from .config import AppConfig, Paths
-from .enrich import load_dictionary, select_vocab, strip_promo_paragraphs
+from .enrich import (
+    TranslationError,
+    Translator,
+    load_dictionary,
+    select_vocab,
+    strip_promo_paragraphs,
+)
 from .models import Issue
 from .sources import build_source
-from .textutil import md_to_plain
+from .textutil import md_to_plain, truncate_words
 
 log = logging.getLogger("dailyprint")
 
@@ -51,4 +57,22 @@ def build_issue(cfg: AppConfig, source: str | None = None) -> Issue:
                 if dictionary.available:
                     for item in issue.vocab:
                         item.gloss = dictionary.lookup(item.word)
+
+    if cfg.render.translation and cfg.render.chinese:
+        theme, _ = truncate_words(article.text, cfg.render.max_words)
+        try:
+            translator = Translator(
+                cfg.paths.translation_cache,
+                target=cfg.translation.target,
+                providers=cfg.translation.providers,
+                email=cfg.translation.email,
+            )
+            issue.translation = translator.translate(theme)
+            log.info(
+                "中文译文: %d 字（翻译请求 %d 次）", len(issue.translation), translator.requests
+            )
+        except TranslationError as e:
+            log.warning("翻译失败，跳过译文: %s", e)
+            log.warning("（可设 HTTPS_PROXY 走代理，或在此处填邮箱提高额度）")
+
     return issue
