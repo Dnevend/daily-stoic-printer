@@ -39,6 +39,7 @@ printed: 2026-10-18 09:00
 - **中英混排排版**：按**显示宽度**换行（中文算 2 列），中文走 GB18030 中文模式
 - **两种打印机接入**：网络 9100 端口直发（免驱动）/ CUPS 队列（USB）
 - **可测试**：纯函数排版 + pytest 测试，无需打印机即可验证
+- **长文保护**：正文超过 `max_words`（默认 900 词）时打印截断，存档仍保留全文
 
 ## 安装
 
@@ -85,7 +86,7 @@ uv pip install -e ".[dev]"        # 或 make install
 | `print [--ip IP \| --queue NAME] [--dry-run]` | 抓取 + 排版 + 发送 |
 | `test-print` | 发送测试页 |
 
-通用参数：`--source`、`--width`、`--words`、`--common`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
+通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
 
 ## 配置
 

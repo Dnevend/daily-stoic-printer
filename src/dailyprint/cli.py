@@ -31,6 +31,7 @@ def _add_render_opts(p: argparse.ArgumentParser) -> None:
     p.add_argument("--width", type=int, help=f"每行列数（默认 {WIDTH}）")
     p.add_argument("--words", type=int, help="生词条数（默认 8）")
     p.add_argument("--common", type=int, help="视为'已认识'的高频词个数（默认 6000）")
+    p.add_argument("--max-words", type=int, help="打印时正文最多保留多少词（默认 900，0=不限）")
     p.add_argument("--no-vocab", action="store_true", help="不印生词表")
     p.add_argument("--no-zh", action="store_true", help="不印中文释义（打印机不支持中文时用）")
 
@@ -49,6 +50,9 @@ def _apply_overrides(args: argparse.Namespace, cfg: AppConfig) -> None:
         value = getattr(args, attr, None)
         if value is not None:
             setattr(render_cfg, attr, value)
+    max_words = getattr(args, "max_words", None)
+    if max_words is not None:
+        render_cfg.max_words = max_words
     if getattr(args, "no_vocab", False):
         render_cfg.vocab = False
     if getattr(args, "no_zh", False):
@@ -96,7 +100,12 @@ def cmd_fetch(args: argparse.Namespace, cfg: AppConfig) -> int:
 
 def cmd_preview(args: argparse.Namespace, cfg: AppConfig) -> int:
     issue = build_issue(cfg)
-    text = render(issue, width=cfg.render.width, stamp=time.strftime("%Y-%m-%d %H:%M"))
+    text = render(
+        issue,
+        width=cfg.render.width,
+        stamp=time.strftime("%Y-%m-%d %H:%M"),
+        max_words=cfg.render.max_words,
+    )
     log.info("文章: %s  (%s)", issue.article.title, issue.article.date)
     log.info("生词: %d 个", len(issue.vocab))
     if args.out:
@@ -111,7 +120,12 @@ def cmd_preview(args: argparse.Namespace, cfg: AppConfig) -> int:
 
 def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
     issue: Issue = build_issue(cfg)
-    text = render(issue, width=cfg.render.width, stamp=time.strftime("%Y-%m-%d %H:%M"))
+    text = render(
+        issue,
+        width=cfg.render.width,
+        stamp=time.strftime("%Y-%m-%d %H:%M"),
+        max_words=cfg.render.max_words,
+    )
     path = Store(cfg.paths).save_print(issue.article.date or "print", text)
     log.info("文章: %s  (%s)", issue.article.title, issue.article.date)
     log.info("留档: %s", path)

@@ -54,6 +54,36 @@ def test_md_to_plain_strips_markdown():
     assert not out.startswith(">")
 
 
+def test_html_to_md_separates_adjacent_inline_tags():
+    html = (
+        '<p><strong><a href="u1">Get</a></strong>'
+        '<strong><a href="u2">The Book</a></strong></p>'
+    )
+    from dailyprint.textutil import html_to_md
+
+    plain = md_to_plain(html_to_md(html))
+    assert "Get The Book" in plain  # 而不是 "GetThe Book"
+
+
+def test_html_to_md_preserves_spaces_inside_link_text():
+    # 原文把分词的空格写在链接文字内部
+    html = (
+        '<p><strong><a href="u1">Get </a></strong>'
+        '<strong><a href="u2"> the Book</a></strong></p>'
+    )
+    from dailyprint.textutil import html_to_md
+
+    assert "Get the Book" in md_to_plain(html_to_md(html))
+
+
+def test_md_to_plain_drops_image_only_links():
+    md = "Promo here. [![](https://x/i.png)](https://store.example/p) End."
+    out = md_to_plain(md)
+    assert "Promo here." in out and "End." in out
+    assert "store.example" not in out
+    assert "[]" not in out
+
+
 def test_lemmas_reduces_inflections():
     assert "watch" in lemmas("watching")
     assert "errand" in lemmas("errands")

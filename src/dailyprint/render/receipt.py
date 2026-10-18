@@ -6,9 +6,20 @@ from ..models import Issue
 from ..textutil import WIDTH, center_disp, to_ascii, wrap_disp
 
 
-def render(issue: Issue, *, width: int = WIDTH, stamp: str = "") -> str:
-    """把一期内容排成 80mm 小票文本。"""
+def render(
+    issue: Issue, *, width: int = WIDTH, stamp: str = "", max_words: int = 0
+) -> str:
+    """把一期内容排成 80mm 小票文本。
+
+    ``max_words`` > 0 时，正文超出部分会被截断（存档仍保留全文），避免长文打印成好几米。
+    """
     article = issue.article
+    body = article.text
+    truncated = False
+    if max_words > 0 and len(body.split()) > max_words:
+        body = " ".join(body.split()[:max_words])
+        truncated = True
+
     lines: list[str] = []
 
     lines.append("=" * width)
@@ -21,7 +32,10 @@ def render(issue: Issue, *, width: int = WIDTH, stamp: str = "") -> str:
     lines.append("")
     lines.append("-" * width)
     lines.append("")
-    lines.extend(wrap_disp(article.text, width))
+    lines.extend(wrap_disp(body, width))
+    if truncated:
+        lines.append("")
+        lines.append(f"[truncated to first {max_words} words]")
 
     if issue.vocab:
         lines.append("")

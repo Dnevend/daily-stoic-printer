@@ -38,6 +38,20 @@ def test_render_lines_fit_width():
     assert all(dlen(line) <= 48 for line in text.split("\n"))
 
 
+def test_render_truncates_long_articles():
+    issue = make_issue()
+    issue.article.text = " ".join(f"w{i}" for i in range(500))
+    text = render(issue, width=48, max_words=100)
+    assert "truncated to first 100 words" in text
+    assert all(dlen(line) <= 48 for line in text.split("\n"))
+
+
+def test_render_keeps_short_articles_intact():
+    text = render(make_issue(), width=48, max_words=900)
+    assert "truncated" not in text
+    assert "Think about how rarely" in text
+
+
 def test_render_without_vocab():
     issue = make_issue()
     issue.vocab = []

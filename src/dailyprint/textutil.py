@@ -116,6 +116,7 @@ def html_to_text(html: str) -> str:
 def md_to_plain(md: str) -> str:
     """Markdown -> 打印用纯文本（英文，转 ASCII）。"""
     s = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", md)  # 图片
+    s = re.sub(r"\[\]\([^)]*\)", "", s)  # 只剩空链接时（图片套链接）残留的 []
     s = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", s)  # 链接 -> 文字
     s = re.sub(r"(?m)^\s*>\s?", "", s)  # 引用前缀
     s = re.sub(r"\*\*([^*]+)\*\*", r"\1", s)
@@ -144,6 +145,8 @@ def html_to_md(fragment: str) -> str:
     s = re.sub(r"(?is)<noscript[^>]*>.*?</noscript>", "", s)  # noscript 里是重复图片
     s = re.sub(r"(?is)<!--.*?-->", "", s)
     s = re.sub(r"(?i)<br\s*/?>", "\n", s)
+    # 相邻的同名内联标签之间补一个空格，避免 "…</strong><strong>…" 粘成 "GetThe"
+    s = re.sub(r"(?i)</(a|strong|b|em|i)>\s*<\1\b", r"</\1> <\1", s)
 
     def img_repl(m: re.Match) -> str:
         tag = m.group(0)
@@ -156,7 +159,11 @@ def html_to_md(fragment: str) -> str:
     s = re.sub(r"(?is)<img[^>]*>", img_repl, s)
     s = re.sub(
         r'(?is)<a[^>]*href="([^"]+)"[^>]*>(.*?)</a>',
-        lambda m: f"[{html_lib.unescape(strip_tags(m.group(2))).strip()}]({m.group(1)})",
+        # 不要 strip：原文有时把分词的空格写在链接文字里（如 "<a>Get </a>"）
+        lambda m: "[{}]({})".format(
+            re.sub(r"\s+", " ", html_lib.unescape(strip_tags(m.group(2)))).strip("\n\r\t"),
+            m.group(1),
+        ),
         s,
     )
     s = re.sub(r"(?is)<(em|i)[^>]*>(.*?)</\1>", r"*\2*", s)

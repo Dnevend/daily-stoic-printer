@@ -33,6 +33,7 @@ class RenderConfig:
     chinese: bool = True
     vocab: bool = True
     count: int = 1  # 一次取几篇（默认最新一篇）
+    max_words: int = 900  # 打印时正文最多保留多少词（0 = 不限制）
 
 
 @dataclass

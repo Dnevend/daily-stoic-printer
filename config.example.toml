@@ -8,6 +8,7 @@ source = "daily-stoic"
 width = 48        # 80mm Font A ≈ 48 列
 words = 8         # 生词条数
 common = 6000     # 前 N 个高频词视为"已认识"；调低＝生词更多更简单
+max_words = 900   # 打印时正文最多保留多少词（0 = 不限）；长文会被截断但存档保留全文
 chinese = true    # 打印中文释义（不支持中文的机型设为 false）
 vocab = true      # 是否附生词表
 
