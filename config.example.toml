@@ -15,6 +15,8 @@ translation = true    # 打印正文中文译文（需要联网，且打印机�
 images = "content"    # 正文配图：off | content（跳过商店/推广图）| all
 max_images = 2        # 最多打印几张配图
 max_image_height = 400  # 位图最大高度（dots，越小越省纸）
+chinese = true        # 打印中文释义（不支持中文的机型设 false，会同时关掉译文）
+vocab = true          # 是否附生词表
 
 # 翻译提供方（按顺序尝试，失败自动换下一个）
 [translation]
@@ -30,8 +32,6 @@ keywords = ["marcus aurelius bust", "seneca statue", "epictetus", "stoicism"]
 width = 576
 height = 320
 credit = true             # 打印作者/许可/来源（wikimedia 的图建议保留）
-chinese = true    # 打印中文释义（不支持中文的机型设为 false）
-vocab = true      # 是否附生词表
 
 [printer]
 kind = "network"  # network（网口，推荐）| cups

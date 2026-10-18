@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from dailyprint.config import AppConfig, PrinterConfig, RenderConfig, load_config, project_root
 from dailyprint.sources import available_types
 
@@ -66,6 +68,38 @@ def test_config_dataclasses_are_independent():
     a.width = 1
     assert b.width == 48
     assert PrinterConfig().port == 9100
+
+
+def test_example_config_loads():
+    """守住仓库里那份示例配置：照抄 config.toml 必须能加载。"""
+    path = project_root() / "config.example.toml"
+    cfg = load_config(path)
+    assert cfg.source == "daily-stoic"
+    assert cfg.render.images in {"off", "content", "all"}
+    assert cfg.render.chinese is True
+    assert cfg.cover.source in {"wikimedia", "picsum", "local", "none"}
+    assert cfg.cover.keywords  # 非空
+    assert cfg.translation.providers
+    assert cfg.printer.kind in {"network", "cups"}
+
+
+def test_unknown_key_in_section_reports_name(tmp_path: Path):
+    path = tmp_path / "config.toml"
+    path.write_text('[render]\nwidht = 48\n', encoding="utf-8")  # 拼错 width
+    with pytest.raises(ValueError) as err:
+        load_config(path)
+    assert "widht" in str(err.value) and "[render]" in str(err.value)
+
+
+def test_toml_lists_become_tuples(tmp_path: Path):
+    path = tmp_path / "config.toml"
+    path.write_text(
+        '[render]\npromo_phrases = ["a", "b"]\n[cover]\nkeywords = ["x"]\n',
+        encoding="utf-8",
+    )
+    cfg = load_config(path)
+    assert cfg.render.promo_phrases == ("a", "b")
+    assert cfg.cover.keywords == ("x",)
 
 
 def test_translation_config_from_toml(tmp_path: Path):

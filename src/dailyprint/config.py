@@ -176,37 +176,37 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         if "source" in d:
             cfg.source = d["source"]
         kw = {k: v for k, v in d.items() if k in RenderConfig.__dataclass_fields__}
-        cfg.render = _render_config(cfg.render, kw)
+        cfg.render = _dataclass_from(RenderConfig, cfg.render, kw, "defaults")
     if "render" in data:
-        cfg.render = _render_config(cfg.render, data["render"])
+        cfg.render = _dataclass_from(RenderConfig, cfg.render, data["render"], "render")
     if "translation" in data:
-        cfg.translation = _translation_config(cfg.translation, data["translation"])
+        cfg.translation = _dataclass_from(
+            TranslationConfig, cfg.translation, data["translation"], "translation"
+        )
     if "cover" in data:
-        cfg.cover = _cover_config(cfg.cover, data["cover"])
+        cfg.cover = _dataclass_from(CoverConfig, cfg.cover, data["cover"], "cover")
     if "printer" in data:
-        cfg.printer = PrinterConfig(**{**cfg.printer.__dict__, **data["printer"]})
+        cfg.printer = _dataclass_from(PrinterConfig, cfg.printer, data["printer"], "printer")
     if "paths" in data and data["paths"].get("home"):
         cfg.paths = Paths(Path(data["paths"]["home"]).expanduser())
     if "sources" in data:
         cfg.sources = _merge(cfg.sources, data["sources"])
 
 
-def _render_config(current: RenderConfig, over: dict) -> RenderConfig:
+def _dataclass_from(cls, current, over: dict, section: str):
+    """用配置覆盖 dataclass；键名不认识时报出具体是哪个。"""
     over = dict(over)
-    if isinstance(over.get("promo_phrases"), list):
-        over["promo_phrases"] = tuple(over["promo_phrases"])
-    return RenderConfig(**{**current.__dict__, **over})
+    unknown = sorted(set(over) - set(cls.__dataclass_fields__))
+    if unknown:
+        raise ValueError(
+            f"config.toml 的 [{section}] 里有无法识别的配置项: {', '.join(unknown)}"
+        )
+    # TOML 的数组在 Python 里是 list，转成 tuple 保持 dataclass 不可变
+    for key, value in over.items():
+        if isinstance(value, list) and isinstance(current.__dict__.get(key), tuple):
+            over[key] = tuple(value)
+    return cls(**{**current.__dict__, **over})
 
 
-def _translation_config(current: TranslationConfig, over: dict) -> TranslationConfig:
-    over = dict(over)
-    if isinstance(over.get("providers"), list):
-        over["providers"] = tuple(over["providers"])
-    return TranslationConfig(**{**current.__dict__, **over})
-
-
-def _cover_config(current: CoverConfig, over: dict) -> CoverConfig:
-    over = dict(over)
-    if isinstance(over.get("keywords"), list):
-        over["keywords"] = tuple(over["keywords"])
-    return CoverConfig(**{**current.__dict__, **over})
+def _render_config(current: RenderConfig, over: dict) -> RenderConfig:  # 兼容旧调用
+    return _dataclass_from(RenderConfig, current, over, "render")
