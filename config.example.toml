@@ -12,6 +12,9 @@ max_words = 900   # 打印时正文最多保留多少词（0 = 不限）；长�
 filter_promos = true  # 过滤正文里的推广/CTA 段落（打印用；存档仍是原文）
 promo_phrases = []    # 追加自定义促销短语，如 ["special offer", "limited time"]
 translation = true    # 打印正文中文译文（需要联网，且打印机支持中文）
+images = "content"    # 正文配图：off | content（跳过商店/推广图）| all
+max_images = 2        # 最多打印几张配图
+max_image_height = 400  # 位图最大高度（dots，越小越省纸）
 
 # 翻译提供方（按顺序尝试，失败自动换下一个）
 [translation]

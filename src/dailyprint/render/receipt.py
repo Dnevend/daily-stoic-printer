@@ -33,6 +33,15 @@ def render(
         lines.append("")
         lines.append(f"[truncated to first {max_words} words]")
 
+    if issue.images:
+        lines.append("")
+        lines.append("-" * width)
+        lines.append("IMAGES")
+        lines.append("-" * width)
+        for image in issue.images:
+            lines.append(f"[IMAGE] {image.label}")
+            lines.append("")
+
     if issue.translation:
         lines.append("")
         lines.append("-" * width)

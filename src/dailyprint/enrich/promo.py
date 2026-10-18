@@ -20,6 +20,7 @@ E. 只有图片/链接、没有文字
 from __future__ import annotations
 
 import re
+import urllib.parse
 
 from ..textutil import md_to_plain
 
@@ -69,6 +70,40 @@ _CTA_START = re.compile(
 )
 _LINK_RE = re.compile(r"\]\((https?://[^)]+)\)")
 
+# 指向这些域名/路径的链接视为推广（用于识别"推广图"）
+PROMO_HOSTS: tuple[str, ...] = (
+    "store.dailystoic.com",
+    "thepaintedporch.com",
+    "geni.us",
+    "amzn.to",
+    "amazon.",
+    "bookshop.org",
+    "bit.ly",
+)
+PROMO_PATH_HINTS: tuple[str, ...] = (
+    "/wisdom",
+    "/store",
+    "/life",
+    "/challenge",
+    "/collections",
+    "/products",
+)
+
+
+def is_promo_link(url: str) -> bool:
+    """判断链接是否指向商店/推广页。"""
+    try:
+        parts = urllib.parse.urlsplit(url)
+    except ValueError:
+        return False
+    host = (parts.hostname or "").lower()
+    if any(host == h or host.endswith("." + h) or host.endswith(h) for h in PROMO_HOSTS):
+        return True
+    if host.endswith("dailystoic.com"):
+        path = parts.path.lower()
+        return any(path.startswith(h) for h in PROMO_PATH_HINTS)
+    return False
+
 
 def split_paragraphs(md: str) -> list[str]:
     return [p.strip() for p in re.split(r"\n\s*\n", md.strip()) if p.strip()]
@@ -96,7 +131,11 @@ def promo_reason(
     has_link = bool(_LINK_RE.search(paragraph))
 
     if not plain.strip():
-        return "image-only" if has_link or "![" in paragraph else None
+        # 纯图片段：只有链到商店/推广页才算推广图，正文配图要保留
+        if has_link:
+            links = _LINK_RE.findall(paragraph)
+            return "image-only" if any(is_promo_link(u) for u in links) else None
+        return None
 
     for phrase in STRONG_PHRASES:
         if phrase in lower:

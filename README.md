@@ -45,6 +45,8 @@ printed: 2026-10-18 09:00
 - **中文译文**：正文自动翻译成中文（默认 MyMemory 免费接口，失败自动切 Google），
   按段落缓存在 `data/cache/translate/`，重跑不重复请求；翻译失败只跳过译文，不影响正文。
   `--no-translation` 可关闭
+- **正文配图**：打印正文里的配图（自动跳过链到商店/推广页的图），位图走 ESC/POS `GS v 0`。
+  需要 Pillow：`uv pip install -e ".[images]"`（不装也能跑，只是不打图）；`--no-images` 可关闭
 
 ## 安装
 
@@ -54,6 +56,8 @@ cd daily-stoic-printer
 
 uv venv
 uv pip install -e ".[dev]"        # 或 make install
+# 想打印正文配图（需要 Pillow）：
+# uv pip install -e ".[dev,images]"
 
 # 首次准备：下载高频词表和英汉词典到 data/
 .venv/bin/dailyprint build-data
@@ -92,7 +96,7 @@ uv pip install -e ".[dev]"        # 或 make install
 | `test-print` | 发送测试页 |
 
 通用参数：`--source`、`--width`、`--words`、`--common`、`--max-words`、`--keep-promos`、
-`--no-translation`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
+`--no-translation`、`--no-images`、`--no-vocab`、`--no-zh`、`--config`、`-v`。
 
 ## 配置
 

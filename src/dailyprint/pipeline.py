@@ -8,11 +8,13 @@ from .config import AppConfig, Paths
 from .enrich import (
     TranslationError,
     Translator,
+    fetch_image,
     load_dictionary,
+    select_content_images,
     select_vocab,
     strip_promo_paragraphs,
 )
-from .models import Issue
+from .models import ImageRef, Issue
 from .sources import build_source
 from .textutil import md_to_plain, truncate_words
 
@@ -34,17 +36,33 @@ def build_issue(cfg: AppConfig, source: str | None = None) -> Issue:
 
     article = src.latest(1)[0]
 
+    body_md = article.raw
     if cfg.render.filter_promos:
-        filtered, dropped = strip_promo_paragraphs(
+        body_md, dropped = strip_promo_paragraphs(
             article.raw, extra_phrases=cfg.render.promo_phrases
         )
         if dropped:
             log.info("过滤推广段落 %d 个（--keep-promos 可关闭）：", len(dropped))
             for reason, text in dropped:
                 log.info("  - [%s] %s", reason, text)
-        article.text = md_to_plain(filtered)
+        article.text = md_to_plain(body_md)
 
     issue = Issue(article=article)
+
+    if cfg.render.images != "off":
+        refs = select_content_images(
+            body_md, limit=cfg.render.max_images, skip_promo=cfg.render.images == "content"
+        )
+        kept: list[ImageRef] = []
+        for ref in refs:
+            try:
+                ref.path = fetch_image(ref.url, cfg.paths.image_cache)
+                kept.append(ref)
+            except Exception as e:  # noqa: BLE001
+                log.warning("配图下载失败，跳过 %s: %s", ref.label, e)
+        issue.images = kept
+        if kept:
+            log.info("正文配图 %d 张: %s", len(kept), ", ".join(r.label for r in kept))
 
     if cfg.render.vocab:
         freq = load_wordlist(cfg.paths)

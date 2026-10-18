@@ -37,6 +37,9 @@ class RenderConfig:
     filter_promos: bool = True  # 过滤正文里的推广/CTA 段落
     promo_phrases: tuple[str, ...] = ()  # 追加的促销短语
     translation: bool = True  # 是否打印中文译文（需要联网，且打印机支持中文）
+    images: str = "content"  # off | content（跳过推广图）| all
+    max_images: int = 2  # 最多打印几张配图
+    max_image_height: int = 400  # 位图最大高度（dots，越小越省纸）
 
 
 @dataclass
@@ -70,6 +73,10 @@ class Paths:
     @property
     def translation_cache(self) -> Path:
         return self.cache / "translate"
+
+    @property
+    def image_cache(self) -> Path:
+        return self.cache / "images"
 
     @property
     def articles(self) -> Path:

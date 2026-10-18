@@ -15,7 +15,8 @@ classifiers = [
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6"]
+dev = ["pytest>=8", "ruff>=0.6", "pillow>=10"]
+images = ["pillow>=10"]
 
 [project.scripts]
 dailyprint = "dailyprint.cli:main"

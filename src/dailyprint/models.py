@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 @dataclass
@@ -28,9 +29,19 @@ class VocabItem:
 
 
 @dataclass
+class ImageRef:
+    """正文配图：远程 URL + 显示名（本地文件路径在下载后填入）。"""
+
+    url: str
+    label: str
+    path: Path | None = None
+
+
+@dataclass
 class Issue:
-    """一期内容 = 文章 + 译文 + 生词表。"""
+    """一期内容 = 文章 + 配图 + 译文 + 生词表。"""
 
     article: Article
     vocab: list[VocabItem] = field(default_factory=list)
     translation: str = ""  # 正文的中文译文（可选）
+    images: list[ImageRef] = field(default_factory=list)  # 要打印的正文配图
