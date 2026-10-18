@@ -1,0 +1,35 @@
+# 复制为 config.toml 后按需修改（config.toml 不入库）
+# 优先级：内置默认值 < config.toml < 环境变量 < 命令行参数
+
+[defaults]
+source = "daily-stoic"
+
+[render]
+width = 48        # 80mm Font A ≈ 48 列
+words = 8         # 生词条数
+common = 6000     # 前 N 个高频词视为"已认识"；调低＝生词更多更简单
+chinese = true    # 打印中文释义（不支持中文的机型设为 false）
+vocab = true      # 是否附生词表
+
+[printer]
+kind = "network"  # network（网口，推荐）| cups
+ip = "192.168.1.50"
+port = 9100
+# queue = "XP-80T"  # kind = "cups" 时填队列名（USB 打印机）
+
+# ---------------------------------------------------------------- 来源
+# 每加一个来源就写一段 [sources.<名字>]，然后用 `dailyprint sources` 查看，
+# 用 --source <名字> 或在 [defaults] 里切换默认来源。
+
+[sources.daily-stoic]
+type = "daily_stoic"
+base_url = "https://dailystoic.com"
+
+# RSS 是通用来源，任何提供 feed 的站点都能接：
+# [sources.marginalian]
+# type = "rss"
+# url = "https://www.themarginalian.org/feed/"
+
+# [sources.farnam-street]
+# type = "rss"
+# url = "https://fs.blog/feed/"

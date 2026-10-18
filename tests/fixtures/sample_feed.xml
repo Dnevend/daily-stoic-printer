@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Sample Feed</title>
+    <link>https://example.com</link>
+    <description>test fixture</description>
+    <item>
+      <title>First Post</title>
+      <link>https://example.com/first</link>
+      <pubDate>Mon, 12 Oct 2026 08:00:00 +0000</pubDate>
+      <description>first summary</description>
+      <content:encoded><![CDATA[<p>First <em>body</em> text.</p>]]></content:encoded>
+    </item>
+    <item>
+      <title>Second Post</title>
+      <link>https://example.com/second</link>
+      <pubDate>Sat, 17 Oct 2026 08:30:00 +0000</pubDate>
+      <description>second summary</description>
+      <content:encoded><![CDATA[<p>Second body text with <strong>emphasis</strong>.</p>]]></content:encoded>
+    </item>
+  </channel>
+</rss>

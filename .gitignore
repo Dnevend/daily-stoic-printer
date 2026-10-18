@@ -4,19 +4,25 @@ prints/
 preview.txt
 *.bin
 
-# 第三方数据缓存（由 build_data.py 生成）
+# 第三方数据缓存（由 `dailyprint build-data` 生成）
 data/*.csv
 data/*.tsv
 data/*.part
 data/wordfreq.txt
 
 # 本机配置与日志
+config.toml
 config.json
 logs/
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
 
 # macOS
 .DS_Store

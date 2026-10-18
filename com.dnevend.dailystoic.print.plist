@@ -5,16 +5,24 @@
     <key>Label</key>
     <string>com.dnevend.dailystoic.print</string>
 
+    <!-- 使用项目虚拟环境里的命令行入口 -->
     <key>ProgramArguments</key>
     <array>
-        <string>/opt/homebrew/bin/python3</string>
-        <string>/Users/dnevend/Projects/daily-stoic/daily_print.py</string>
+        <string>/Users/dnevend/Projects/daily-stoic/.venv/bin/dailyprint</string>
+        <string>print</string>
     </array>
 
     <key>WorkingDirectory</key>
     <string>/Users/dnevend/Projects/daily-stoic</string>
 
-    <!-- 每天早上 9:00 打印最新一篇 -->
+    <!-- lp（CUPS）需要 PATH -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!-- 每天早上 9:00 打印最新一篇；睡眠中错过的任务会在唤醒后补跑 -->
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
