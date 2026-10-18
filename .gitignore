@@ -1,0 +1,22 @@
+# 抓取的内容（个人学习用，不入库）
+articles/
+prints/
+preview.txt
+*.bin
+
+# 第三方数据缓存（由 build_data.py 生成）
+data/*.csv
+data/*.tsv
+data/*.part
+data/wordfreq.txt
+
+# 本机配置与日志
+config.json
+logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
