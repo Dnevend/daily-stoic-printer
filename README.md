@@ -344,7 +344,7 @@ make clean       # 删 .venv 与各种缓存
 | 定时任务没打印 | 看 `logs/print.err`；确认打印机 IP 未变、Mac 已唤醒 |
 | 定时任务报 `OSError: [Errno 65] No route to host` | macOS「本地网络」隐私会拒绝 launchd 里未系统签名的 Python 直连局域网；已自动回退到系统 `nc` 发送，若仍失败说明网络层不通 |
 | 每天打印同一篇 | 上游站点没更新（看 `prints/` 日期）；`dailyprint fetch` 可确认最新一篇是哪天 |
-| 封面/配图印成噪点或乱码 | XP-80T 位图渲染有固件缺陷（同一串字节单独发正常、夹在文章里变噪点）；先 `images = "off"`、`cover.source = "none"` 绕开 |
+| 封面/配图印成乱码文字 | 位图命令头写成了大写 `GS V`（切纸），打印机先切一刀再把位图当文本打；正确是小写 `GS v 0`（`1D 76 30 00`），已在 `render/raster.py` 修正 |
 | 想重放某天内容 | `prints/YYYY-MM-DD.txt` 是当次打印的留档 |
 
 ## 数据来源与许可

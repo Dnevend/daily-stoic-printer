@@ -12,12 +12,11 @@ max_words = 900   # 打印时正文最多保留多少词（0 = 不限）；长�
 filter_promos = true  # 过滤正文里的推广/CTA 段落（打印用；存档仍是原文）
 promo_phrases = []    # 追加自定义促销短语，如 ["special offer", "limited time"]
 translation = true    # 打印正文中文译文（需要联网，且打印机支持中文）
-# 位图（封面/配图）在部分热敏机上不可靠：XPrinter XP-80T 实测同一张图单独发
-# 能正常印出，夹在整篇文章里却变成噪点（文字不受影响）。遇到这种机型先把
-# images 设成 "off"、[cover] 的 source 设成 "none"，保证每日出纸稳定。
+# 位图（封面/配图）需要 Pillow（`uv pip install -e ".[images]"`）。命令头必须是小写
+# GS v 0（1D 76 30 00）；误写成大写 GS V 会让打印机先切一刀、再把位图当文本打成乱码。
 images = "content"    # 正文配图：off | content（跳过商店/推广图）| all
 max_images = 2        # 最多打印几张配图
-max_image_height = 200  # 位图最大高度（dots，越小越省纸；越大越容易触发上面那个问题）
+max_image_height = 200  # 位图最大高度（dots，越小越省纸）
 chinese = true        # 打印中文释义（不支持中文的机型设 false，会同时关掉译文）
 vocab = true          # 是否附生词表
 
@@ -30,7 +29,6 @@ email = ""            # MyMemory 额度：匿名 5000 字符/天，填邮箱可�
 # 封面图（从外部图源取一张；同一天内稳定，换天换图）
 [cover]
 source = "wikimedia"      # wikimedia（主题图）| picsum（随机美图）| local（本地图）| none
-#                         # 位图不稳的机型（见 [render] 上方说明）直接设 "none"
 keywords = ["marcus aurelius bust", "seneca statue", "epictetus", "stoicism"]
 # local_path = "/Users/you/Pictures/cover.jpg"   # source = "local" 时使用
 width = 576
