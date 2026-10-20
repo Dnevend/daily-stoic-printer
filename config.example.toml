@@ -14,7 +14,7 @@ promo_phrases = []    # 追加自定义促销短语，如 ["special offer", "lim
 translation = true    # 打印正文中文译文（需要联网，且打印机支持中文）
 images = "content"    # 正文配图：off | content（跳过商店/推广图）| all
 max_images = 2        # 最多打印几张配图
-max_image_height = 400  # 位图最大高度（dots，越小越省纸）
+max_image_height = 200  # 位图最大高度（dots，越小越省纸；XP-80T 实测 200 安全，400 会乱码）
 chinese = true        # 打印中文释义（不支持中文的机型设 false，会同时关掉译文）
 vocab = true          # 是否附生词表
 

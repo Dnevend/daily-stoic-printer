@@ -40,6 +40,7 @@ class RenderConfig:
     images: str = "content"  # off | content（跳过推广图）| all
     max_images: int = 2  # 最多打印几张配图
     max_image_height: int = 400  # 位图最大高度（dots，越小越省纸）
+    dither: bool = True  # 位图抖动；关掉用阈值化，字节种类更少、更抗热敏机解析缺陷
 
 
 @dataclass

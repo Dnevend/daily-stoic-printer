@@ -140,6 +140,7 @@ def cmd_preview(args: argparse.Namespace, cfg: AppConfig) -> int:
             args.out,
             columns=cfg.render.width,
             max_image_height=cfg.render.max_image_height,
+            dither=cfg.render.dither,
         )
         log.info("预览: %s", path)
         if path.suffix.lower() in (".png", ".html", ".htm"):
@@ -210,6 +211,7 @@ def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
             cut=cfg.printer.cut,
             images={img.label: img.path for img in issue.all_images() if img.path},
             max_image_height=cfg.render.max_image_height,
+            dither=cfg.render.dither,
         )
     )
     log.info("已发送 -> %r", printer)

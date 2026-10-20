@@ -24,12 +24,13 @@ def encode(
     cut: bool = True,
     images: dict[str, Path] | None = None,
     max_image_height: int = 400,
+    dither: bool = True,
 ) -> bytes:
     """文本 -> ESC/POS 字节流；``images`` 用于把 ``[IMAGE] 名字`` 行替换成位图。"""
     enc = "gb18030" if chinese else "ascii"
     buf = bytearray()
     buf += ESC + b"@"  # 初始化
-    buf += ESC + b"3\x18"  # 行距
+    buf += ESC + b"3\x18"  # 行距（与位图无关，已验证不影响图片渲染）
     if chinese:
         buf += b"\x1c\x26"  # FS & 进入中文模式
 
@@ -41,7 +42,7 @@ def encode(
                 buf += f"[image missing: {match.group(1)}]".encode(enc, "replace") + b"\n"
             else:
                 try:
-                    buf += image_to_raster(path, max_height=max_image_height)
+                    buf += image_to_raster(path, max_height=max_image_height, dither=dither)
                     buf += b"\n"
                 except RasterError as e:
                     buf += f"[image skipped: {e}]".encode(enc, "replace") + b"\n"

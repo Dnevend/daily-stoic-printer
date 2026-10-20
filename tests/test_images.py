@@ -106,7 +106,7 @@ def _png(width: int = 8, height: int = 2, black_first_row: bool = True) -> bytes
 
 def test_raster_header_geometry_and_inversion():
     data = image_to_raster(_png(), max_width=8)
-    assert data[:4] == b"\x1dV\x000"
+    assert data[:4] == b"\x1dV\x30\x00"  # GS v 0 m（m=0）
     assert data[4:8] == bytes([1, 0, 2, 0])  # stride=1 byte, height=2
     assert data[8:] == b"\xff\x00"  # 黑行全 1、白行全 0（位图 1=黑）
 
@@ -139,7 +139,7 @@ def test_encode_replaces_image_line(tmp_path: Path):
     path = tmp_path / "t.png"
     path.write_bytes(_png())
     data = encode("[IMAGE] t.png\nhello", chinese=False, images={"t.png": path})
-    assert b"\x1dV\x000" in data
+    assert b"\x1dV\x30\x00" in data
     assert b"hello" in data
 
 
@@ -151,3 +151,12 @@ def test_encode_reports_missing_image():
 def test_encode_without_images_param_keeps_line():
     data = encode("[IMAGE] t.png", chinese=False)
     assert b"[IMAGE] t.png" in data
+
+
+def test_raster_emits_single_command_for_tall_image():
+    pytest.importorskip("PIL")
+    data = image_to_raster(_png(width=8, height=200), max_width=8, max_height=200)
+    # 实测 XP-80T 只认单条 GS v 0；切带会让它把后续数据当文本打成乱码
+    assert data.count(b"\x1dV\x30\x00") == 1
+    assert data[:8] == b"\x1dV\x30\x00" + bytes([1, 0, 200, 0])
+    assert len(data) == 8 + 200
