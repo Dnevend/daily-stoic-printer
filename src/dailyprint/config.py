@@ -94,6 +94,14 @@ class AudioConfig:
 
 
 @dataclass
+class NotifyConfig:
+    enabled: bool = True
+    stale_days: int = 2  # 最新文章比今天老超过 N 天视为源站断更
+    channel: str = ""  # 空 = 复用 [audio] 的 channel
+    target: str = ""  # 空 = 复用 [audio] 的 target
+
+
+@dataclass
 class Paths:
     home: Path
 
@@ -137,6 +145,10 @@ class Paths:
     def dictionary(self) -> Path:
         return self.data / "dict.tsv"
 
+    @property
+    def state(self) -> Path:
+        return self.data / "state.json"
+
 
 @dataclass
 class AppConfig:
@@ -146,6 +158,7 @@ class AppConfig:
     cover: CoverConfig = field(default_factory=CoverConfig)
     printer: PrinterConfig = field(default_factory=PrinterConfig)
     audio: AudioConfig = field(default_factory=AudioConfig)
+    notify: NotifyConfig = field(default_factory=NotifyConfig)
     paths: Paths = field(default_factory=lambda: Paths(project_root()))
     sources: dict[str, dict] = field(default_factory=lambda: dict(DEFAULT_SOURCES))
     config_path: Path | None = None
@@ -214,6 +227,8 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         cfg.printer = _dataclass_from(PrinterConfig, cfg.printer, data["printer"], "printer")
     if "audio" in data:
         cfg.audio = _dataclass_from(AudioConfig, cfg.audio, data["audio"], "audio")
+    if "notify" in data:
+        cfg.notify = _dataclass_from(NotifyConfig, cfg.notify, data["notify"], "notify")
     if "paths" in data and data["paths"].get("home"):
         cfg.paths = Paths(Path(data["paths"]["home"]).expanduser())
     if "sources" in data:

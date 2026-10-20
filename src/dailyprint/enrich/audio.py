@@ -278,6 +278,50 @@ def synthesize(
     )
 
 
+def _openclaw_send(
+    args: list[str],
+    *,
+    openclaw: str | None = None,
+    timeout: float = 30,
+    ok_message: str = "已发送",
+) -> bool:
+    """调 ``openclaw message send``；openclaw 缺失或任何异常都只返回 False。"""
+    openclaw = openclaw or OPENCLAW
+    if not Path(openclaw).exists():
+        log.warning("openclaw 不存在，跳过发送: %s", openclaw)
+        return False
+
+    env = _env_with_path()
+
+    cmd = [openclaw, "message", "send", *args]
+    try:
+        rc, out, err = _run(cmd, timeout, env=env)
+        if rc == 0:
+            log.info("%s", ok_message)
+            return True
+        log.warning("openclaw 发送失败 (rc=%s): %s", rc, (err or out).strip())
+        return False
+    except Exception as e:  # noqa: BLE001
+        log.warning("openclaw 发送异常: %s", e)
+        return False
+
+
+def send_text(
+    text: str,
+    channel: str,
+    target: str,
+    openclaw: str | None = None,
+    timeout: float = 30,
+) -> bool:
+    """通过 OpenClaw 发送纯文本消息；任何异常都只返回 False。"""
+    return _openclaw_send(
+        ["--channel", channel, "-t", target, "-m", text],
+        openclaw=openclaw,
+        timeout=timeout,
+        ok_message="已发送文本消息",
+    )
+
+
 def send_audio(
     path: Path,
     channel: str,
@@ -287,33 +331,9 @@ def send_audio(
     timeout: float = 30,
 ) -> bool:
     """通过 OpenClaw 发送语音文件；任何异常都只返回 False。"""
-    openclaw = openclaw or OPENCLAW
-    if not Path(openclaw).exists():
-        log.warning("openclaw 不存在，跳过发送: %s", openclaw)
-        return False
-
-    env = _env_with_path()
-
-    cmd = [
-        openclaw,
-        "message",
-        "send",
-        "--channel",
-        channel,
-        "-t",
-        target,
-        "--media",
-        str(path.resolve()),
-        "-m",
-        caption,
-    ]
-    try:
-        rc, out, err = _run(cmd, timeout, env=env)
-        if rc == 0:
-            log.info("已发送语音: %s", path)
-            return True
-        log.warning("openclaw 发送失败 (rc=%s): %s", rc, (err or out).strip())
-        return False
-    except Exception as e:  # noqa: BLE001
-        log.warning("openclaw 发送异常: %s", e)
-        return False
+    return _openclaw_send(
+        ["--channel", channel, "-t", target, "--media", str(path.resolve()), "-m", caption],
+        openclaw=openclaw,
+        timeout=timeout,
+        ok_message=f"已发送语音: {path}",
+    )

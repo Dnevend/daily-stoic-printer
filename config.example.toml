@@ -57,6 +57,15 @@ target = "1419937886"
 # send_dir = "/Users/you/.openclaw/workspace/.openclaw/tmp/dailyprint-audio"  # 发送用目录；空 = 默认允许目录
 # archive_dir = "/Users/you/Music/dailyprint"                              # 留档目录；空 = prints/audio
 
+# 断更提醒：最新文章日期比今天老超过 stale_days 天时，经 openclaw 发一条 Telegram
+# （每个自然日最多一条；发送失败只记日志，绝不影响打印）。同一篇文章不会重复打印，
+# 见 `dailyprint print --force`。
+# [notify]
+# enabled = true
+# stale_days = 2    # 最新文章超过几天没更新视为断更
+# channel = ""      # 空 = 复用 [audio] 的 channel
+# target = ""       # 空 = 复用 [audio] 的 target
+
 # ---------------------------------------------------------------- 来源
 # 每加一个来源就写一段 [sources.<名字>]，然后用 `dailyprint sources` 查看，
 # 用 --source <名字> 或在 [defaults] 里切换默认来源。

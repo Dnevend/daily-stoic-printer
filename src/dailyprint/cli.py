@@ -7,17 +7,20 @@ import logging
 import shutil
 import sys
 import time
+from collections.abc import Callable
+from datetime import date
 from pathlib import Path
 
 from . import __version__
 from .config import AppConfig, load_config
 from .data import build as build_data
-from .enrich.audio import build_speech_text, send_audio, synthesize
-from .models import Issue
+from .enrich.audio import build_speech_text, send_audio, send_text, synthesize
+from .models import Article, Issue
 from .pipeline import build_issue
 from .printers import build_printer
 from .render import encode, render, test_page, write_preview
 from .sources import available_types
+from .state import StateStore
 from .storage import Store
 from .textutil import WIDTH
 
@@ -189,8 +192,65 @@ def _run_audio(args: argparse.Namespace, cfg: AppConfig, issue: Issue) -> None:
         log.warning("语音处理失败（不影响打印）: %s", e)
 
 
+def _article_age_days(article_date: str, today: date) -> int | None:
+    """文章日期距 ``today`` 几天；日期缺失或无法解析时返回 None。"""
+    try:
+        published = date.fromisoformat((article_date or "").strip())
+    except ValueError:
+        return None
+    return (today - published).days
+
+
+def _notify_stale(
+    cfg: AppConfig,
+    article: Article,
+    state: StateStore,
+    *,
+    sender: Callable[..., bool] | None = None,
+    today: date | None = None,
+) -> None:
+    """源站断更提醒：文章年龄超过 [notify] stale_days 时发一条 Telegram。
+
+    每个自然日最多一条；任何失败只记警告，绝不影响打印主流程（同 _run_audio 约定）。
+    """
+    try:
+        nc = cfg.notify
+        if not nc.enabled:
+            return
+        today = today or date.today()
+        age = _article_age_days(article.date, today)
+        if age is None:
+            log.debug("文章日期缺失/无法解析，跳过断更检查: %r", article.date)
+            return
+        if age <= nc.stale_days:
+            return
+        day = today.isoformat()
+        if state.stale_alert_sent_on(day):
+            log.info("断更提醒今天已发过，跳过")
+            return
+        sender = sender or send_text
+        channel = nc.channel or cfg.audio.channel
+        target = nc.target or cfg.audio.target
+        msg = f"源站断更 {age} 天：最新仍是 {article.date}《{article.title}》"
+        if sender(msg, channel=channel, target=target):
+            state.mark_stale_alert(day)
+    except Exception as e:  # noqa: BLE001
+        log.warning("断更提醒发送失败（不影响打印）: %s", e)
+
+
 def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
     issue: Issue = build_issue(cfg)
+    state = StateStore.load(cfg.paths.state)
+    _notify_stale(cfg, issue.article, state)
+
+    if not getattr(args, "force", False) and state.is_printed(issue.article.url):
+        log.info(
+            "已印过，跳过: %s (%s)（--force 可强制重印）",
+            issue.article.title,
+            issue.article.date,
+        )
+        return 0
+
     text = render(
         issue,
         width=cfg.render.width,
@@ -215,6 +275,10 @@ def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
         )
     )
     log.info("已发送 -> %r", printer)
+    try:
+        state.mark_printed(issue.article, path)
+    except OSError as e:
+        log.warning("台账写入失败（不影响本次打印，下次可能重印）: %s", e)
     _run_audio(args, cfg, issue)
     return 0
 
@@ -325,6 +389,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_render_opts(p)
     _add_printer_opts(p)
     p.add_argument("--dry-run", action="store_true", help="只排版留档，不发送")
+    p.add_argument("--force", action="store_true", help="已印过也强制重印（跳过查重）")
     p.add_argument("--no-audio", action="store_true", help="不生成/发送语音")
     p.add_argument("--audio-voice", help="覆盖 edge-tts 朗读音色（如 en-US-AriaNeural）")
     p.add_argument("--audio-engine", help="覆盖 TTS 引擎（auto | edge | say）")

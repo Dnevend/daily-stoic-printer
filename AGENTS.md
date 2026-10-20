@@ -27,7 +27,7 @@ make build-data     # 构建词典 / 词频数据
 
 ## 硬约束
 
-- 绝不提交：`articles/`、`prints/`、`logs/`、`data/*.csv`、`data/*.tsv`、`config.toml`、`.venv/`
+- 绝不提交：`articles/`、`prints/`、`logs/`、`data/*.csv`、`data/*.tsv`、`data/state.json`、`config.toml`、`.venv/`
 - 抓取的正文是第三方内容，个人学习用途，不入库
 - 提交前跑 `make test` 和 `make lint`
 
