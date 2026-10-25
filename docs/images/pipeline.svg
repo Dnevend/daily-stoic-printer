@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+<defs><pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="9" cy="9" r="1" fill="#e2ddd0"/></pattern></defs>
+<rect width="1600" height="900" fill="#fdfcf8"/>
+<rect width="1600" height="900" fill="url(#dots)" opacity="0.5"/>
+<text x="62" y="58" font-family="Menlo, monospace" font-size="15" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="3.6">DAILY STOIC PRINTER</text>
+<text x="62" y="106" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="44" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1.5">斯多葛打印机</text>
+<text x="1538" y="58" font-family="Menlo, monospace" font-size="15" fill="#8b8b91" font-weight="400" text-anchor="end" letter-spacing="1.4">NO. 1023 / 2026</text>
+<text x="1538" y="104" font-family="Menlo, monospace" font-size="22" fill="#4f4f55" font-weight="400" text-anchor="end" font-style="italic">memento mori</text>
+<path d="M62 136 H1538" stroke="#b3aea2" stroke-width="1.6" stroke-dasharray="2 7" stroke-linecap="round"/>
+<rect x="52" y="164" width="1496" height="462" rx="12" ry="12" fill="none" stroke="#b3aea2" stroke-width="1.8" stroke-dasharray="8 8"/>
+<rect x="76" y="148" width="408" height="33" rx="4" fill="#17171a"/>
+<text x="92" y="171" font-family="Menlo, monospace" font-size="17" fill="#fdfcf8" font-weight="400" text-anchor="start" letter-spacing="1">RUNTIME</text>
+<text x="172" y="171" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="17" fill="#fdfcf8" font-weight="400" text-anchor="start" letter-spacing="0.5">· 每天 09:00 · 零 token</text>
+<rect x="78" y="216" width="200" height="132" rx="8" ry="8" fill="#f2efe7" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="96" y="246" font-family="Menlo, monospace" font-size="15" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="2">TRIGGER</text>
+<text x="96" y="300" font-family="Menlo, monospace" font-size="44" fill="#17171a" font-weight="700" text-anchor="start" letter-spacing="1">09:00</text>
+<text x="96" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#17171a" font-weight="400" text-anchor="start">launchd 定时</text>
+<circle cx="246" cy="256" r="15" fill="none" stroke="#17171a" stroke-width="2"/>
+<path d="M246 247 V256 H253" stroke="#17171a" stroke-width="2" fill="none"/>
+<rect x="318.0" y="216" width="168" height="132" rx="8" ry="8" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="334.0" y="246" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="1.6">FETCH</text>
+<path d="M334.0 258 H470.0" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 5"/>
+<text x="334.0" y="300" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="32" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1">抓取</text>
+<text x="334.0" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="start">解析 sitemap</text>
+<path d="M493.0 282.0 H510.0" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M510.0 276.5 L519.0 282.0 L510.0 287.5 Z" fill="#17171a"/>
+<rect x="526.0" y="216" width="168" height="132" rx="8" ry="8" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="542.0" y="246" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="1.6">TRANSLATE</text>
+<path d="M542.0 258 H678.0" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 5"/>
+<text x="542.0" y="300" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="32" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1">翻译</text>
+<text x="542.0" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="start">免费接口</text>
+<path d="M701.0 282.0 H718.0" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M718.0 276.5 L727.0 282.0 L718.0 287.5 Z" fill="#17171a"/>
+<rect x="734.0" y="216" width="168" height="132" rx="8" ry="8" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="750.0" y="246" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="1.6">VOCAB</text>
+<path d="M750.0 258 H886.0" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 5"/>
+<text x="750.0" y="300" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="32" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1">生词</text>
+<text x="750.0" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="start">词频表＋词典</text>
+<path d="M909.0 282.0 H926.0" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M926.0 276.5 L935.0 282.0 L926.0 287.5 Z" fill="#17171a"/>
+<rect x="942.0" y="216" width="168" height="132" rx="8" ry="8" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="958.0" y="246" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="1.6">IMAGE</text>
+<path d="M958.0 258 H1094.0" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 5"/>
+<text x="958.0" y="300" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="32" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1">配图</text>
+<text x="958.0" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="start">转黑白点阵</text>
+<path d="M1117.0 282.0 H1134.0" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M1134.0 276.5 L1143.0 282.0 L1134.0 287.5 Z" fill="#17171a"/>
+<rect x="1150.0" y="216" width="168" height="132" rx="8" ry="8" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="1166.0" y="246" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="1.6">PRINT</text>
+<path d="M1166.0 258 H1302.0" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 5"/>
+<text x="1166.0" y="300" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="32" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1">打印</text>
+<text x="1166.0" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="start">排成小票</text>
+<path d="M1325.0 282.0 H1342.0" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M1342.0 276.5 L1351.0 282.0 L1342.0 287.5 Z" fill="#17171a"/>
+<rect x="1358.0" y="216" width="168" height="132" rx="8" ry="8" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="1374.0" y="246" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="1.6">SPEECH</text>
+<path d="M1374.0 258 H1510.0" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 5"/>
+<text x="1374.0" y="300" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="32" fill="#17171a" font-weight="600" text-anchor="start" letter-spacing="1">朗读</text>
+<text x="1374.0" y="328" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="start">edge-tts 合成</text>
+<path d="M285 282.0 H302.0" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M302.0 276.5 L311.0 282.0 L302.0 287.5 Z" fill="#17171a"/>
+<path d="M1234.0 348 V396 H845.0 V447" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M839.5 447 L845.0 456 L850.5 447 Z" fill="#17171a"/>
+<path d="M1442.0 348 V426 H1315.0 V447" stroke="#17171a" stroke-width="2" fill="none"/>
+<path d="M1309.5 447 L1315.0 456 L1320.5 447 Z" fill="#17171a"/>
+<rect x="620" y="456" width="450" height="124" rx="8" ry="8" fill="#f2efe7" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="642" y="486" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="2">PRINTER</text>
+<text x="642" y="526" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="30" fill="#17171a" font-weight="600" text-anchor="start">热敏打印机</text>
+<text x="642" y="556" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="19" fill="#4f4f55" font-weight="400" text-anchor="start">80mm 小票，半张纸</text>
+<text x="1048" y="522" font-family="Menlo, monospace" font-size="21" fill="#17171a" font-weight="400" text-anchor="end">ESC/POS · :9100</text>
+<text x="1048" y="556" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="19" fill="#4f4f55" font-weight="400" text-anchor="end">位图字节流直推</text>
+<rect x="1090" y="456" width="450" height="124" rx="8" ry="8" fill="#f2efe7" stroke="#c9c4b9" stroke-width="1.6"/>
+<text x="1112" y="486" font-family="Menlo, monospace" font-size="14" fill="#4f4f55" font-weight="400" text-anchor="start" letter-spacing="2">TELEGRAM</text>
+<text x="1112" y="526" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="30" fill="#17171a" font-weight="600" text-anchor="start">朗读推送</text>
+<text x="1112" y="556" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="19" fill="#4f4f55" font-weight="400" text-anchor="start">纸在桌上，声在耳边</text>
+<text x="1518" y="522" font-family="Menlo, monospace" font-size="21" fill="#17171a" font-weight="400" text-anchor="end">edge-tts · mp3</text>
+<text x="1518" y="556" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="19" fill="#4f4f55" font-weight="400" text-anchor="end">每天一篇英文</text>
+<path d="M78 466 V562" stroke="#c9c4b9" stroke-width="3"/>
+<text x="98" y="488" font-family="Menlo, monospace" font-size="15" fill="#8b8b91" font-weight="400" text-anchor="start" letter-spacing="2">DESIGN NOTE</text>
+<text x="98" y="530" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="25" fill="#17171a" font-weight="500" text-anchor="start">「能走确定接口的，就别上大模型。」</text>
+<text x="98" y="560" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="18" fill="#4f4f55" font-weight="400" text-anchor="start">大模型贵在生成与判断，不在每天按点搬砖</text>
+<path d="M76 590 H1524" stroke="#c9c4b9" stroke-width="1.2" stroke-dasharray="2 6"/>
+<text x="800" y="618" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="21" fill="#4f4f55" font-weight="400" text-anchor="middle">跑一次几乎没有成本：零 token，只有半张纸</text>
+<rect x="52" y="672" width="1496" height="96" rx="10" ry="10" fill="none" stroke="#b3aea2" stroke-width="1.6" stroke-dasharray="6 7"/>
+<text x="80" y="710" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="23" fill="#17171a" font-weight="600" text-anchor="start">大模型只在这里</text>
+<text x="80" y="736" font-family="Menlo, monospace" font-size="14" fill="#8b8b91" font-weight="400" text-anchor="start" letter-spacing="1.6">OUT OF BAND</text>
+<text x="190" y="736" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="14" fill="#8b8b91" font-weight="400" text-anchor="start" letter-spacing="1">· 仅开发期</text>
+<rect x="330" y="704" width="144" height="40" rx="20" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.4"/>
+<text x="402.0" y="730" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="middle">写这套程序</text>
+<rect x="490" y="704" width="144" height="40" rx="20" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.4"/>
+<text x="562.0" y="730" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="middle">查那四个坑</text>
+<rect x="650" y="704" width="144" height="40" rx="20" fill="#ffffff" stroke="#c9c4b9" stroke-width="1.4"/>
+<text x="722.0" y="730" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="middle">选朗读音色</text>
+<text x="1524" y="730" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="20" fill="#4f4f55" font-weight="400" text-anchor="end">手艺可以外包 · 心意外包不了</text>
+<path d="M62 812 H1538" stroke="#b3aea2" stroke-width="1.6" stroke-dasharray="2 7" stroke-linecap="round"/>
+<text x="62" y="844" font-family="Menlo, monospace" font-size="17" fill="#8b8b91" font-weight="400" text-anchor="start">github.com/Dnevend/daily-stoic-printer</text>
+<text x="1538" y="844" font-family="'PingFang SC', 'Hiragino Sans GB', Menlo, monospace" font-size="17" fill="#8b8b91" font-weight="400" text-anchor="end">每天九点，一条流水线自己转起来</text>
+</svg>
