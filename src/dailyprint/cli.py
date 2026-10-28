@@ -239,8 +239,8 @@ def _notify_stale(
 
 
 def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
-    issue: Issue = build_issue(cfg)
     state = StateStore.load(cfg.paths.state)
+    issue: Issue = build_issue(cfg)
     _notify_stale(cfg, issue.article, state)
 
     if not getattr(args, "force", False) and state.is_printed(issue.article.url):
@@ -249,7 +249,21 @@ def cmd_print(args: argparse.Namespace, cfg: AppConfig) -> int:
             issue.article.title,
             issue.article.date,
         )
-        return 0
+        # 主力源没有新内容时，改用备用源（[defaults] fallback_source）
+        fallback = getattr(cfg, "fallback_source", "") or ""
+        if not fallback or fallback == cfg.source:
+            return 0
+        log.info("主力源无新内容，改用备用源: %s", fallback)
+        try:
+            issue = build_issue(
+                cfg, source=fallback, count=5, skip_urls=state.printed_urls()
+            )
+        except Exception as e:  # noqa: BLE001
+            log.warning("备用源抓取失败，今天不打印: %s", e)
+            return 1
+        if state.is_printed(issue.article.url):
+            log.info("备用源也没有未印过的新内容: %s", fallback)
+            return 0
 
     text = render(
         issue,

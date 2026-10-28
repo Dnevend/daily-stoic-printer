@@ -71,6 +71,10 @@ class StateStore:
     def is_printed(self, url: str) -> bool:
         return url in self._printed
 
+    def printed_urls(self) -> set[str]:
+        """已打印过的文章 URL 集合（备用源挑文章时用来避重）。"""
+        return set(self._printed)
+
     def mark_printed(self, article: Article, print_path: Path) -> None:
         """把文章记入台账并立即写盘。只在打印机发送成功后调用。"""
         self._printed[article.url] = {

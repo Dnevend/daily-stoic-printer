@@ -153,6 +153,7 @@ class Paths:
 @dataclass
 class AppConfig:
     source: str = "daily-stoic"
+    fallback_source: str = ""  # 主力源没有新内容时改用的来源（空 = 不启用）
     render: RenderConfig = field(default_factory=RenderConfig)
     translation: TranslationConfig = field(default_factory=TranslationConfig)
     cover: CoverConfig = field(default_factory=CoverConfig)
@@ -213,6 +214,8 @@ def _apply(cfg: AppConfig, data: dict) -> None:
         d = data["defaults"]
         if "source" in d:
             cfg.source = d["source"]
+        if "fallback_source" in d:
+            cfg.fallback_source = d["fallback_source"]
         kw = {k: v for k, v in d.items() if k in RenderConfig.__dataclass_fields__}
         cfg.render = _dataclass_from(RenderConfig, cfg.render, kw, "defaults")
     if "render" in data:

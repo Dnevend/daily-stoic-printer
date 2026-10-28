@@ -30,13 +30,24 @@ def load_wordlist(paths: Paths) -> list[str]:
     return [ln.strip() for ln in lines if ln.strip()]
 
 
-def build_issue(cfg: AppConfig, source: str | None = None) -> Issue:
-    """抓最新一篇并挑生词（含中文释义）。"""
+def build_issue(
+    cfg: AppConfig,
+    source: str | None = None,
+    count: int = 1,
+    skip_urls: set[str] | frozenset[str] = frozenset(),
+) -> Issue:
+    """抓最新一篇并挑生词（含中文释义）。
+
+    ``count`` 取几篇候选；``skip_urls`` 里的文章会被跳过（备用源用来避开已印过的）。
+    """
     spec = dict(cfg.source_spec(source))
     name = spec.pop("name")
     src = build_source(name, spec)
 
-    article = src.latest(1)[0]
+    articles = src.latest(max(count, 1))
+    if not articles:
+        raise RuntimeError(f"来源 {name!r} 没有文章")
+    article = next((a for a in articles if a.url not in skip_urls), articles[0])
 
     body_md = article.raw
     if cfg.render.filter_promos:
